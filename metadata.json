@@ -1,0 +1,7 @@
+{
+  "name": "Auto Genius",
+  "description": "An intelligent car sales application featuring gamification, financing options, a detailed customer profile, and AI-powered vehicle diagnostics.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
