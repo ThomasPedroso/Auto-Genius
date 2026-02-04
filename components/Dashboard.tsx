@@ -1,12 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { User } from '../types';
 import GamificationCard from './GamificationCard';
 import FinancialServices from './FinancialServices';
 import GamificationQuests from './GamificationQuests';
 import { MOCK_QUESTS } from '../constants';
-import { Save, Edit3 } from 'lucide-react';
+import { Save, Edit3, Wifi, WifiOff, AlertTriangle, LogOut } from 'lucide-react';
 import Modal from './common/Modal';
+import { checkDatabaseConnection } from '../services/firebaseService';
+import { useAuth } from '../contexts/AuthContext';
 
 interface DashboardProps {
   user: User;
@@ -25,6 +27,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onCompleteQuest, onUpdatePr
       occupation: user.occupation || '',
   });
 
+  const { logout } = useAuth();
+
+  // Connection Status
+  const [dbStatus, setDbStatus] = useState<'checking' | 'connected' | 'denied' | 'error'>('checking');
+
+  useEffect(() => {
+    const check = async () => {
+        const status = await checkDatabaseConnection();
+        setDbStatus(status);
+    };
+    check();
+  }, []);
+
   const handleSaveRegistration = () => {
       onUpdateProfile(tempRegistration);
       setIsRegistrationModalOpen(false);
@@ -41,24 +56,64 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onCompleteQuest, onUpdatePr
             </div>
         </div>
         
-        <button 
-            onClick={() => {
-                setTempRegistration({
-                    email: user.email || '',
-                    phone: user.phone || '',
-                    cpf: user.cpf || '',
-                    birthDate: user.birthDate || '',
-                    monthlyIncome: user.monthlyIncome || 0,
-                    occupation: user.occupation || '',
-                });
-                setIsRegistrationModalOpen(true);
-            }}
-            className="bg-gray-800 border border-gray-600 text-white px-3 py-2 rounded-full text-xs font-bold hover:bg-gray-700 transition-colors shadow-lg flex items-center gap-2"
-        >
-            <Edit3 size={14} />
-            Editar Cadastro
-        </button>
+        <div className="flex flex-col gap-2">
+            <button 
+                onClick={() => {
+                    setTempRegistration({
+                        email: user.email || '',
+                        phone: user.phone || '',
+                        cpf: user.cpf || '',
+                        birthDate: user.birthDate || '',
+                        monthlyIncome: user.monthlyIncome || 0,
+                        occupation: user.occupation || '',
+                    });
+                    setIsRegistrationModalOpen(true);
+                }}
+                className="bg-gray-800 border border-gray-600 text-white px-3 py-2 rounded-full text-xs font-bold hover:bg-gray-700 transition-colors shadow-lg flex items-center gap-2 justify-center"
+            >
+                <Edit3 size={14} />
+                Editar
+            </button>
+            <button
+                onClick={logout}
+                className="bg-red-500/10 border border-red-500/30 text-red-400 px-3 py-2 rounded-full text-xs font-bold hover:bg-red-500/20 transition-colors shadow-lg flex items-center gap-2 justify-center"
+            >
+                <LogOut size={14} />
+                Sair
+            </button>
+        </div>
       </header>
+
+      {/* Status Indicator */}
+      <div className={`rounded-lg p-3 flex items-center justify-between ${
+          dbStatus === 'connected' ? 'bg-green-900/20 border border-green-800' : 
+          dbStatus === 'denied' ? 'bg-red-900/20 border border-red-800' : 
+          dbStatus === 'checking' ? 'bg-gray-800 border border-gray-700' : 'bg-yellow-900/20 border border-yellow-800'
+      }`}>
+          <div className="flex items-center gap-3">
+              {dbStatus === 'connected' && <Wifi className="text-green-500" size={20} />}
+              {dbStatus === 'denied' && <WifiOff className="text-red-500" size={20} />}
+              {dbStatus === 'checking' && <div className="w-5 h-5 rounded-full border-2 border-gray-500 border-t-transparent animate-spin"></div>}
+              {dbStatus === 'error' && <AlertTriangle className="text-yellow-500" size={20} />}
+              
+              <div>
+                  <p className={`text-sm font-bold ${
+                      dbStatus === 'connected' ? 'text-green-400' : 
+                      dbStatus === 'denied' ? 'text-red-400' : 
+                      'text-gray-300'
+                  }`}>
+                      {dbStatus === 'connected' ? 'Banco de Dados Conectado' : 
+                       dbStatus === 'denied' ? 'Modo Demo (Offline)' : 
+                       dbStatus === 'checking' ? 'Verificando conexão...' : 'Erro de Conexão'}
+                  </p>
+                  {dbStatus === 'denied' && (
+                      <p className="text-xs text-red-300/70">
+                          Permissão de escrita negada no Firebase. Dados não serão salvos na nuvem.
+                      </p>
+                  )}
+              </div>
+          </div>
+      </div>
 
       <GamificationCard gamification={user.gamification} />
       

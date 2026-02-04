@@ -55,6 +55,7 @@ export interface User {
 }
 
 export interface Car {
+  id?: string; // Added for list management
   make: string;
   model: string;
   year: number;
@@ -89,6 +90,7 @@ export interface MarketplaceCar {
 
 export interface Post {
     id: string;
+    userId?: string;
     authorName: string;
     authorHandle: string;
     authorAvatar: string;
@@ -97,7 +99,7 @@ export interface Post {
     likes: number;
     comments: Comment[];
     timestamp: string;
-    isLiked?: boolean; // Client-side state
+    isLiked?: boolean;
 }
 
 export type FinancialService = 'financing' | 'consortium' | 'equity' | 'insurance';

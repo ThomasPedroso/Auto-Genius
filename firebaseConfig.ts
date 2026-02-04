@@ -1,27 +1,23 @@
-// Firebase integration is currently disabled to prevent build errors in this environment.
-// To enable, uncomment the code below and ensure valid firebase imports in index.html.
 
-/*
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
+// Firebase configuration
 const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY || "SUA_API_KEY",
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN || "seu-projeto.firebaseapp.com",
-  projectId: process.env.FIREBASE_PROJECT_ID || "seu-projeto",
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "seu-projeto.appspot.com",
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID
+  apiKey: "AIzaSyCjyBeG1kDrf9_MITQrT9noV0Qq21ocYTk",
+  authDomain: "auto-genius-937c0.firebaseapp.com",
+  projectId: "auto-genius-937c0",
+  storageBucket: "auto-genius-937c0.firebasestorage.app",
+  messagingSenderId: "169448939448",
+  appId: "1:169448939448:web:00ddb4e845552c67f0394d",
+  measurementId: "G-NL3SVN14VC"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-*/
-export const auth = {};
-export const db = {};
-export const storage = {};

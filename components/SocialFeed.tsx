@@ -1,64 +1,112 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Heart, MessageCircle, Repeat, Share, Send, Image as ImageIcon, X, Calendar as CalendarIcon, MapPin, Users, Ticket } from 'lucide-react';
-import type { Post, User, Comment } from '../types';
-import { MOCK_POSTS, MOCK_EVENTS } from '../constants';
+import type { Post, User, Comment, AutomotiveEvent } from '../types';
+import { MOCK_EVENTS } from '../constants';
 import ImageWithFallback from './common/ImageWithFallback';
+import { getPosts, createPost, updatePost, uploadImage, getEvents, rsvpEvent } from '../services/firebaseService';
+import Loader from './common/Loader';
 
 interface SocialFeedProps {
   user: User;
+  onVisitProfile: (userId: string) => void;
 }
 
 type Tab = 'feed' | 'events';
 
-const SocialFeed: React.FC<SocialFeedProps> = ({ user }) => {
+const SocialFeed: React.FC<SocialFeedProps> = ({ user, onVisitProfile }) => {
   const [activeTab, setActiveTab] = useState<Tab>('feed');
-  const [posts, setPosts] = useState<Post[]>(MOCK_POSTS);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [events, setEvents] = useState<AutomotiveEvent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
   const [newPostContent, setNewPostContent] = useState('');
-  const [newPostImage, setNewPostImage] = useState<string | null>(null);
+  const [newPostImage, setNewPostImage] = useState<string | null>(null); // Preview URL
+  const [newPostFile, setNewPostFile] = useState<File | null>(null); // Actual File
+  
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
   const [newCommentContent, setNewCommentContent] = useState('');
+  const [isPosting, setIsPosting] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleLike = (postId: string) => {
-    setPosts(posts.map(post => {
+  // Load Data from Firestore
+  useEffect(() => {
+      const loadData = async () => {
+          setIsLoading(true);
+          if (activeTab === 'feed') {
+              const loadedPosts = await getPosts();
+              setPosts(loadedPosts);
+          } else {
+              const loadedEvents = await getEvents();
+              setEvents(loadedEvents);
+          }
+          setIsLoading(false);
+      };
+      loadData();
+  }, [activeTab]);
+
+  const handleLike = async (postId: string) => {
+    const updatedPosts = posts.map(post => {
       if (post.id === postId) {
         const isLiked = !post.isLiked;
         return {
           ...post,
           isLiked,
-          likes: isLiked ? post.likes + 1 : post.likes - 1
+          likes: isLiked ? post.likes + 1 : Math.max(0, post.likes - 1)
         };
       }
       return post;
-    }));
+    });
+    setPosts(updatedPosts);
+
+    const postToUpdate = updatedPosts.find(p => p.id === postId);
+    if (postToUpdate) {
+        await updatePost(postToUpdate);
+    }
   };
 
-  const handleAddPost = () => {
-    if (!newPostContent.trim() && !newPostImage) return;
+  const handleAddPost = async () => {
+    if ((!newPostContent.trim() && !newPostImage) || isPosting) return;
+    setIsPosting(true);
 
-    const newPost: Post = {
-      id: Date.now().toString(),
-      authorName: user.name,
-      authorHandle: `@${user.name.replace(/\s+/g, '').toLowerCase()}`,
-      authorAvatar: user.avatarUrl,
-      content: newPostContent,
-      imageUrl: newPostImage || undefined,
-      likes: 0,
-      comments: [],
-      timestamp: 'Agora',
-      isLiked: false
-    };
+    try {
+        let uploadedImageUrl: string | undefined = undefined;
+        
+        if (newPostFile) {
+            uploadedImageUrl = await uploadImage(newPostFile, `posts/${user.name}/${Date.now()}`);
+        }
 
-    setPosts([newPost, ...posts]);
-    setNewPostContent('');
-    setNewPostImage(null);
+        const newPost: Post = {
+            id: Date.now().toString(),
+            authorName: user.name,
+            authorHandle: `@${user.name.replace(/\s+/g, '').toLowerCase()}`,
+            authorAvatar: user.avatarUrl,
+            content: newPostContent,
+            imageUrl: uploadedImageUrl,
+            likes: 0,
+            comments: [],
+            timestamp: 'Agora',
+            isLiked: false
+        };
+
+        setPosts([newPost, ...posts]);
+        setNewPostContent('');
+        setNewPostImage(null);
+        setNewPostFile(null);
+        
+        await createPost(newPost);
+    } catch (error) {
+        console.error("Failed to create post", error);
+    } finally {
+        setIsPosting(false);
+    }
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setNewPostFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setNewPostImage(reader.result as string);
@@ -73,6 +121,7 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ user }) => {
 
   const removeSelectedImage = () => {
     setNewPostImage(null);
+    setNewPostFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -87,10 +136,10 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ user }) => {
     setNewCommentContent('');
   };
 
-  const handleAddComment = (postId: string) => {
+  const handleAddComment = async (postId: string) => {
       if (!newCommentContent.trim()) return;
 
-      setPosts(posts.map(post => {
+      const updatedPosts = posts.map(post => {
           if (post.id === postId) {
               const newComment: Comment = {
                   id: Date.now().toString(),
@@ -105,8 +154,27 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ user }) => {
               };
           }
           return post;
-      }));
+      });
+      setPosts(updatedPosts);
       setNewCommentContent('');
+
+      const postToUpdate = updatedPosts.find(p => p.id === postId);
+      if (postToUpdate) {
+          await updatePost(postToUpdate);
+      }
+  };
+
+  const handleRSVP = async (eventId: string) => {
+      // Optimistic update
+      const updatedEvents = events.map(evt => {
+          if (evt.id === eventId) {
+              // Toggle logic simply adds 1 for demo purposes, real app would track user ID
+              return { ...evt, attendees: evt.attendees + 1 }; 
+          }
+          return evt;
+      });
+      setEvents(updatedEvents);
+      await rsvpEvent(eventId, true);
   };
 
   return (
@@ -135,6 +203,11 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ user }) => {
         </header>
 
         {activeTab === 'feed' ? (
+            isLoading ? (
+                <div className="flex justify-center p-10">
+                    <Loader text="Carregando Feed..." />
+                </div>
+            ) : (
             <>
                 {/* New Post Input */}
                 <div className="p-4 border-b border-gray-800 flex gap-4">
@@ -175,10 +248,10 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ user }) => {
                             </button>
                             <button
                                 onClick={handleAddPost}
-                                disabled={!newPostContent.trim() && !newPostImage}
-                                className="bg-brand-blue text-white font-bold py-1.5 px-5 rounded-full hover:bg-brand-blue/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                disabled={(!newPostContent.trim() && !newPostImage) || isPosting}
+                                className="bg-brand-blue text-white font-bold py-1.5 px-5 rounded-full hover:bg-brand-blue/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                             >
-                                Postar
+                                {isPosting ? 'Enviando...' : 'Postar'}
                             </button>
                         </div>
                     </div>
@@ -189,10 +262,20 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ user }) => {
                     {posts.map(post => (
                         <div key={post.id} className="border-b border-gray-800 p-4 hover:bg-gray-900/30 transition-colors">
                             <div className="flex gap-3">
-                                <img src={post.authorAvatar} alt={post.authorName} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                                <img 
+                                    src={post.authorAvatar} 
+                                    alt={post.authorName} 
+                                    className="w-10 h-10 rounded-full object-cover flex-shrink-0 cursor-pointer" 
+                                    onClick={() => post.userId && onVisitProfile(post.userId)}
+                                />
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <span className="font-bold text-white">{post.authorName}</span>
+                                        <span 
+                                            className="font-bold text-white cursor-pointer hover:underline"
+                                            onClick={() => post.userId && onVisitProfile(post.userId)}
+                                        >
+                                            {post.authorName}
+                                        </span>
                                         <span className="text-gray-500 text-sm">{post.authorHandle} · {post.timestamp}</span>
                                     </div>
                                     <p className="text-gray-200 mb-3 whitespace-pre-wrap">{post.content}</p>
@@ -293,50 +376,53 @@ const SocialFeed: React.FC<SocialFeedProps> = ({ user }) => {
                     ))}
                 </div>
             </>
+            )
         ) : (
             // Events View
             <div className="p-4 space-y-4">
-                <div className="bg-brand-blue/10 border border-brand-blue/30 rounded-lg p-4 mb-4">
-                    <h3 className="text-brand-blue font-bold text-lg mb-1">Calendário Automotivo</h3>
-                    <p className="text-sm text-gray-300">Fique por dentro dos principais eventos, track days e encontros da sua região.</p>
-                </div>
-
-                {MOCK_EVENTS.map((event) => (
-                    <div key={event.id} className="bg-gray-800 rounded-xl overflow-hidden shadow-lg border border-gray-700 flex flex-col sm:flex-row">
-                         <div className="sm:w-48 h-40 sm:h-auto relative shrink-0">
-                             <ImageWithFallback 
-                                src={event.imageUrl} 
-                                alt={event.title} 
-                                className="w-full h-full object-cover"
-                                fallbackType="general"
-                             />
-                             <div className="absolute top-2 right-2 bg-gray-900/80 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-white border border-gray-600">
-                                 {event.price}
-                             </div>
-                         </div>
-                         <div className="p-4 flex-1 flex flex-col justify-between">
-                            <div>
-                                <p className="text-brand-orange font-bold text-xs uppercase tracking-wider mb-1 flex items-center gap-1">
-                                    <CalendarIcon size={12} />
-                                    {event.date}
-                                </p>
-                                <h3 className="text-xl font-bold text-white mb-2">{event.title}</h3>
-                                <div className="flex items-center text-gray-400 text-sm mb-2">
-                                    <MapPin size={14} className="mr-1" />
-                                    {event.location}
-                                </div>
-                                <div className="flex items-center text-gray-500 text-xs">
-                                    <Users size={12} className="mr-1" />
-                                    {event.attendees} confirmados
+                {isLoading ? (
+                    <Loader text="Carregando Eventos..." />
+                ) : (
+                    events.map((event) => (
+                        <div key={event.id} className="bg-gray-800 rounded-xl overflow-hidden shadow-lg border border-gray-700 flex flex-col sm:flex-row">
+                            <div className="sm:w-48 h-40 sm:h-auto relative shrink-0">
+                                <ImageWithFallback 
+                                    src={event.imageUrl} 
+                                    alt={event.title} 
+                                    className="w-full h-full object-cover"
+                                    fallbackType="general"
+                                />
+                                <div className="absolute top-2 right-2 bg-gray-900/80 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-white border border-gray-600">
+                                    {event.price}
                                 </div>
                             </div>
-                            <button className="mt-4 w-full sm:w-auto bg-gray-700 hover:bg-brand-blue text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm">
-                                <Ticket size={16} />
-                                Confirmar Presença
-                            </button>
-                         </div>
-                    </div>
-                ))}
+                            <div className="p-4 flex-1 flex flex-col justify-between">
+                                <div>
+                                    <p className="text-brand-orange font-bold text-xs uppercase tracking-wider mb-1 flex items-center gap-1">
+                                        <CalendarIcon size={12} />
+                                        {event.date}
+                                    </p>
+                                    <h3 className="text-xl font-bold text-white mb-2">{event.title}</h3>
+                                    <div className="flex items-center text-gray-400 text-sm mb-2">
+                                        <MapPin size={14} className="mr-1" />
+                                        {event.location}
+                                    </div>
+                                    <div className="flex items-center text-gray-500 text-xs">
+                                        <Users size={12} className="mr-1" />
+                                        {event.attendees} confirmados
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => handleRSVP(event.id)}
+                                    className="mt-4 w-full sm:w-auto bg-gray-700 hover:bg-brand-blue text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
+                                >
+                                    <Ticket size={16} />
+                                    Confirmar Presença
+                                </button>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
         )}
     </div>

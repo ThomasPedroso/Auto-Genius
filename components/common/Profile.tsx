@@ -1,10 +1,12 @@
 
-import React, { useState } from 'react';
-import type { User, Car } from '../types';
+import React, { useState, useEffect } from 'react';
+import type { User, Car } from '../../types';
 import { Wrench, FileText, Calendar, Shield, Plus, MapPin, Edit3, Car as CarIcon, Upload, Lock, Globe, Instagram } from 'lucide-react';
-import { getVehicleHealthAnalysis } from '../services/geminiService';
-import { checkVehicleStatus, SimulationResult } from '../services/mockApiService';
-import Modal from './common/Modal';
+import { getVehicleHealthAnalysis } from '../../services/geminiService';
+import { checkVehicleStatus, SimulationResult } from '../../services/mockApiService';
+import { uploadImage } from '../../services/firebaseService';
+import Modal from './Modal';
+import ImageWithFallback from './ImageWithFallback';
 
 interface ProfileProps {
   user: User;
@@ -36,10 +38,28 @@ const Profile: React.FC<ProfileProps> = ({ user, car, onUpdateProfile, onUpdateC
       coverUrl: user.coverUrl || '',
       isPublicProfile: user.isPublicProfile ?? true
   });
+  
+  // Sync state with props when user data loads from Firestore
+  useEffect(() => {
+      setTempProfile({
+        name: user.name,
+        avatarUrl: user.avatarUrl,
+        bio: user.bio || '',
+        location: user.location || '',
+        instagram: user.instagram || '',
+        coverUrl: user.coverUrl || '',
+        isPublicProfile: user.isPublicProfile ?? true
+      });
+  }, [user]);
 
   // Car State
   const [isCarModalOpen, setIsCarModalOpen] = useState(false);
   const [tempCar, setTempCar] = useState<Car>(car);
+  
+  // Sync state with props for car
+  useEffect(() => {
+      setTempCar(car);
+  }, [car]);
 
   // Diagnosis State
   const [issueDescription, setIssueDescription] = useState('');
@@ -50,31 +70,50 @@ const Profile: React.FC<ProfileProps> = ({ user, car, onUpdateProfile, onUpdateC
   const [serviceModalOpen, setServiceModalOpen] = useState(false);
   const [serviceResult, setServiceResult] = useState<SimulationResult | null>(null);
   const [isServiceLoading, setIsServiceLoading] = useState(false);
+  
+  // Validation
+  const [locationError, setLocationError] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleSaveProfile = () => {
+    // Simple validation for "City, State" format
+    if (tempProfile.location && !/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+,\s*[A-Z]{2}$/.test(tempProfile.location)) {
+        setLocationError('Formato inválido. Use: Cidade, UF (Ex: São Paulo, SP)');
+        return;
+    }
+    setLocationError('');
     onUpdateProfile(tempProfile);
     setIsProfileModalOpen(false);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, field: 'avatarUrl' | 'coverUrl') => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'avatarUrl' | 'coverUrl') => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setTempProfile(prev => ({ ...prev, [field]: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
+      setIsUploading(true);
+      try {
+          // Upload to Firebase Storage
+          const downloadURL = await uploadImage(file, `users/${user.name}/${field}_${Date.now()}`);
+          setTempProfile(prev => ({ ...prev, [field]: downloadURL }));
+      } catch (error) {
+          console.error("Upload failed", error);
+      } finally {
+          setIsUploading(false);
+      }
     }
   };
 
-  const handleCarImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCarImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setTempCar(prev => ({ ...prev, imageUrl: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
+      setIsUploading(true);
+      try {
+          const downloadURL = await uploadImage(file, `garage/${user.name}/car_${Date.now()}`);
+          setTempCar(prev => ({ ...prev, imageUrl: downloadURL }));
+      } catch (error) {
+          console.error("Upload failed", error);
+      } finally {
+          setIsUploading(false);
+      }
     }
   };
 
@@ -122,38 +161,35 @@ const Profile: React.FC<ProfileProps> = ({ user, car, onUpdateProfile, onUpdateC
        <div className="relative mb-16">
             {/* Cover Image */}
             <div className="h-40 w-full bg-gray-800 overflow-hidden relative group">
-                <img 
-                    src={user.coverUrl || 'https://picsum.photos/seed/cover/800/300'} 
-                    alt="Cover" 
-                    className="w-full h-full object-cover opacity-70"
+                <ImageWithFallback 
+                  src={user.coverUrl || ''} 
+                  alt="Cover" 
+                  className="w-full h-full opacity-70"
+                  fallbackType="general"
                 />
                 {!user.coverUrl && (
-                    <div className="absolute inset-0 flex items-center justify-center text-gray-500">
+                    <div className="absolute inset-0 flex items-center justify-center text-gray-500 bg-gray-800">
                         Sem imagem de capa
                     </div>
                 )}
+                {/* Header for garage ownership */}
+                <div className="absolute top-2 left-4 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full">
+                    <p className="text-xs text-white font-bold uppercase tracking-wider">Garagem de {user.name}</p>
+                </div>
             </div>
             
             {/* Profile Info Overlay */}
             <div className="absolute top-24 left-4 right-4 flex justify-between items-end">
-                <div className="relative">
-                    <img 
+                <div className="relative w-28 h-28 rounded-full border-4 border-gray-900 bg-gray-800 overflow-hidden">
+                    <ImageWithFallback 
                         src={user.avatarUrl} 
                         alt={user.name} 
-                        className="w-28 h-28 rounded-full border-4 border-gray-900 object-cover bg-gray-800" 
+                        fallbackType="user"
+                        className="w-full h-full" 
                     />
                 </div>
                 <button 
                     onClick={() => {
-                        setTempProfile({
-                            name: user.name,
-                            avatarUrl: user.avatarUrl,
-                            bio: user.bio || '',
-                            location: user.location || '',
-                            instagram: user.instagram || '',
-                            coverUrl: user.coverUrl || '',
-                            isPublicProfile: user.isPublicProfile ?? true
-                        });
                         setIsProfileModalOpen(true);
                     }}
                     className="mb-2 bg-gray-800/80 backdrop-blur-md border border-gray-600 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-gray-700 transition-colors shadow-lg"
@@ -206,7 +242,14 @@ const Profile: React.FC<ProfileProps> = ({ user, car, onUpdateProfile, onUpdateC
                 onClick={() => onViewCarDetails(car)}
                 className="bg-gray-800 rounded-xl overflow-hidden shadow-lg border border-gray-700 relative group cursor-pointer transform transition-all duration-300 hover:shadow-brand-blue/20 hover:border-brand-blue"
             >
-                <img src={car.imageUrl} alt={`${car.make} ${car.model}`} className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105" />
+                <div className="w-full h-48 overflow-hidden relative">
+                    <ImageWithFallback 
+                      src={car.imageUrl} 
+                      alt={`${car.make} ${car.model}`} 
+                      fallbackType="car"
+                      className="w-full h-full group-hover:scale-105 transition-transform duration-300" 
+                    />
+                </div>
                 <div className="p-4 space-y-3">
                 <div className="flex justify-between items-start">
                     <h2 className="text-xl font-bold group-hover:text-brand-blue transition-colors">{car.year} {car.make} {car.model}</h2>
@@ -350,8 +393,10 @@ const Profile: React.FC<ProfileProps> = ({ user, car, onUpdateProfile, onUpdateC
                     type="text" 
                     value={tempProfile.location} 
                     onChange={(e) => setTempProfile({...tempProfile, location: e.target.value})}
-                    className="w-full bg-gray-700 rounded-md p-2 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-blue" 
+                    className="w-full bg-gray-700 rounded-md p-2 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                    placeholder="Cidade, UF"
                 />
+                {locationError && <p className="text-red-400 text-xs mt-1">{locationError}</p>}
             </div>
             
             {/* Image Uploads */}
@@ -359,10 +404,10 @@ const Profile: React.FC<ProfileProps> = ({ user, car, onUpdateProfile, onUpdateC
                 <label className="block text-sm font-medium text-gray-300 mb-1">Foto de Perfil</label>
                 <div className="flex items-center gap-3">
                     <img src={tempProfile.avatarUrl} className="w-10 h-10 rounded-full object-cover bg-gray-600" alt="Preview" />
-                    <label className="cursor-pointer bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-md text-sm flex items-center gap-2 transition-colors">
+                    <label className={`cursor-pointer bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-md text-sm flex items-center gap-2 transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         <Upload size={16} />
-                        <span>Escolher arquivo</span>
-                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'avatarUrl')} />
+                        <span>{isUploading ? 'Enviando...' : 'Escolher arquivo'}</span>
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'avatarUrl')} disabled={isUploading} />
                     </label>
                 </div>
             </div>
@@ -373,17 +418,18 @@ const Profile: React.FC<ProfileProps> = ({ user, car, onUpdateProfile, onUpdateC
                     {tempProfile.coverUrl && (
                         <img src={tempProfile.coverUrl} className="w-full h-20 object-cover rounded-md bg-gray-600" alt="Preview" />
                     )}
-                    <label className="cursor-pointer bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-md text-sm flex items-center justify-center gap-2 transition-colors w-full">
+                    <label className={`cursor-pointer bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-md text-sm flex items-center justify-center gap-2 transition-colors w-full ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         <Upload size={16} />
-                        <span>Escolher capa</span>
-                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'coverUrl')} />
+                        <span>{isUploading ? 'Enviando...' : 'Escolher capa'}</span>
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'coverUrl')} disabled={isUploading} />
                     </label>
                 </div>
             </div>
 
             <button 
                 onClick={handleSaveProfile}
-                className="w-full bg-brand-blue text-white font-bold py-3 px-4 rounded-md hover:bg-brand-blue/90 flex items-center justify-center space-x-2 transition-colors duration-200 mt-4"
+                disabled={isUploading}
+                className="w-full bg-brand-blue text-white font-bold py-3 px-4 rounded-md hover:bg-brand-blue/90 flex items-center justify-center space-x-2 transition-colors duration-200 mt-4 disabled:opacity-50"
             >
                 <Edit3 size={20} />
                 <span>Salvar Alterações</span>
@@ -451,61 +497,24 @@ const Profile: React.FC<ProfileProps> = ({ user, car, onUpdateProfile, onUpdateC
                     {tempCar.imageUrl && (
                         <img src={tempCar.imageUrl} className="w-full h-40 object-cover rounded-md bg-gray-600" alt="Preview" />
                     )}
-                    <label className="cursor-pointer bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-md text-sm flex items-center justify-center gap-2 transition-colors w-full border border-gray-600">
+                    <label className={`cursor-pointer bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-md text-sm flex items-center justify-center gap-2 transition-colors w-full border border-gray-600 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         <Upload size={16} />
-                        <span>Escolher foto</span>
-                        <input type="file" accept="image/*" className="hidden" onChange={handleCarImageUpload} />
+                        <span>{isUploading ? 'Enviando...' : 'Escolher foto'}</span>
+                        <input type="file" accept="image/*" className="hidden" onChange={handleCarImageUpload} disabled={isUploading} />
                     </label>
                 </div>
             </div>
 
             <button 
                 onClick={handleSaveCar}
-                className="w-full bg-brand-blue text-white font-bold py-3 px-4 rounded-md hover:bg-brand-blue/90 flex items-center justify-center space-x-2 transition-colors duration-200 mt-4"
+                disabled={isUploading}
+                className="w-full bg-brand-blue text-white font-bold py-3 px-4 rounded-md hover:bg-brand-blue/90 flex items-center justify-center space-x-2 transition-colors duration-200 mt-4 disabled:opacity-50"
             >
                 <CarIcon size={20} />
                 <span>Salvar Veículo</span>
             </button>
          </div>
       </Modal>
-
-      {/* Service Result Modal */}
-      {serviceModalOpen && (
-        <Modal
-            isOpen={serviceModalOpen}
-            onClose={() => setServiceModalOpen(false)}
-            title={serviceResult?.title || 'Consultando...'}
-        >
-            {isServiceLoading ? (
-                 <div className="flex flex-col justify-center items-center h-32 space-y-4">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-blue"></div>
-                    <p className="text-gray-400">Buscando informações...</p>
-                </div>
-            ) : serviceResult ? (
-                <div className="space-y-4">
-                    <div className="space-y-3">
-                        {serviceResult.details.map((item, idx) => (
-                            <div key={idx} className="flex justify-between items-center border-b border-gray-600/50 pb-2 last:border-0">
-                                <span className="text-gray-400">{item.label}</span>
-                                <span className="font-semibold text-white">{item.value}</span>
-                            </div>
-                        ))}
-                    </div>
-                     <div className="bg-brand-blue/20 p-3 rounded-md border border-brand-blue/50 mt-4">
-                        <p className="text-xs text-brand-blue text-center">{serviceResult.disclaimer}</p>
-                    </div>
-                    <button 
-                        onClick={() => setServiceModalOpen(false)}
-                        className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors mt-2"
-                    >
-                        Fechar
-                    </button>
-                </div>
-            ) : (
-                <p className="text-brand-red text-center">Erro ao consultar serviço.</p>
-            )}
-        </Modal>
-      )}
     </div>
   );
 };

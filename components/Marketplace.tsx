@@ -1,19 +1,20 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Gauge, Palette, Fuel, Wand2, Sparkles, X, RotateCcw } from 'lucide-react';
-import { MOCK_MARKETPLACE_CARS } from '../constants';
+import { Search, Gauge, Palette, Fuel, Wand2, Sparkles, X, RotateCcw, Heart } from 'lucide-react';
 import type { MarketplaceCar } from '../types';
 import { generateCarImage, searchCarsWithGemini } from '../services/geminiService';
+import { getMarketplaceCars, updateMarketplaceCar, uploadImage } from '../services/firebaseService';
 import Loader from './common/Loader';
 import ImageWithFallback from './common/ImageWithFallback';
-import { carStorage } from '../utils/db';
 
 interface CarCardProps {
   car: MarketplaceCar;
   onSelectCar: (car: MarketplaceCar) => void;
   onUpdateImage: (id: string, newUrl: string) => void;
+  onToggleLike: (id: string) => void;
 }
 
-const CarCard: React.FC<CarCardProps> = ({ car, onSelectCar, onUpdateImage }) => {
+const CarCard: React.FC<CarCardProps> = ({ car, onSelectCar, onUpdateImage, onToggleLike }) => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerateImage = async (e: React.MouseEvent) => {
@@ -27,11 +28,9 @@ const CarCard: React.FC<CarCardProps> = ({ car, onSelectCar, onUpdateImage }) =>
         car.color,
         car.description
       );
-      // Save the image to the app state
       onUpdateImage(car.id, newImage);
     } catch (error) {
       console.error("Failed to generate image", error);
-      alert("Não foi possível gerar a imagem. Tente novamente.");
     } finally {
       setIsGenerating(false);
     }
@@ -43,7 +42,6 @@ const CarCard: React.FC<CarCardProps> = ({ car, onSelectCar, onUpdateImage }) =>
       className="bg-gray-800 rounded-xl overflow-hidden shadow-lg border border-gray-700 transition-all duration-300 hover:shadow-2xl hover:shadow-brand-blue/30 hover:border-brand-blue group cursor-pointer relative"
     >
       <div className="overflow-hidden relative h-48 w-full">
-        {/* Added key={car.imageUrl} to force component remount when image changes */}
         <ImageWithFallback 
           key={car.imageUrl}
           src={car.imageUrl} 
@@ -52,6 +50,22 @@ const CarCard: React.FC<CarCardProps> = ({ car, onSelectCar, onUpdateImage }) =>
           className="w-full h-full group-hover:scale-110 transition-transform duration-300"
         />
         
+        {/* Like Button */}
+        <button
+            onClick={(e) => {
+                e.stopPropagation();
+                onToggleLike(car.id);
+            }}
+            className={`absolute top-2 left-2 p-2 rounded-full backdrop-blur-md transition-colors z-10 flex items-center gap-1.5 border ${
+                car.isLiked
+                ? 'bg-brand-red/20 text-brand-red border-brand-red/50'
+                : 'bg-gray-900/60 text-white border-gray-600 hover:bg-gray-900/80'
+            }`}
+        >
+            <Heart size={16} fill={car.isLiked ? "currentColor" : "none"} />
+            <span className="text-xs font-bold">{car.likes}</span>
+        </button>
+
         {/* AI Generation Button */}
         <button
           onClick={handleGenerateImage}
@@ -116,12 +130,11 @@ const Marketplace: React.FC<MarketplaceProps> = ({ onSelectCar }) => {
   const [aiFilteredIds, setAiFilteredIds] = useState<string[] | null>(null);
   const [isAiSearching, setIsAiSearching] = useState(false);
 
-  // Initial Load from IndexedDB
+  // Initial Load from Firebase
   useEffect(() => {
     const loadData = async () => {
       try {
-        await carStorage.initialize();
-        const loadedCars = await carStorage.getAll();
+        const loadedCars = await getMarketplaceCars();
         setCars(loadedCars);
       } catch (error) {
         console.error("Failed to load cars:", error);
@@ -132,38 +145,65 @@ const Marketplace: React.FC<MarketplaceProps> = ({ onSelectCar }) => {
     loadData();
   }, []);
 
-  const handleUpdateCarImage = async (id: string, newUrl: string) => {
-    // 1. Update Local State for immediate UI feedback
+  // Helper to convert Base64 to Blob for upload
+  const base64ToBlob = async (base64: string): Promise<Blob> => {
+    const res = await fetch(base64);
+    return await res.blob();
+  };
+
+  const handleUpdateCarImage = async (id: string, base64Image: string) => {
+    // 1. Optimistic UI update (immediate feedback)
     const updatedCars = cars.map(car => 
-      car.id === id ? { ...car, imageUrl: newUrl } : car
+      car.id === id ? { ...car, imageUrl: base64Image } : car
     );
     setCars(updatedCars);
 
-    // 2. Persist to IndexedDB
-    const carToUpdate = updatedCars.find(c => c.id === id);
-    if (carToUpdate) {
-      try {
-        await carStorage.saveCar(carToUpdate);
-      } catch (error) {
-        console.error("Failed to save to DB:", error);
-      }
+    // 2. Persist to Firebase Storage -> Firestore
+    try {
+        // Check if it's a base64 string (starts with data:image)
+        if (base64Image.startsWith('data:image')) {
+            const blob = await base64ToBlob(base64Image);
+            const file = new File([blob], `car-${id}-${Date.now()}.png`, { type: 'image/png' });
+            
+            // Upload to Storage
+            const storageUrl = await uploadImage(file, `marketplace_images/${id}/${Date.now()}.png`);
+            
+            // Update Firestore with the short Storage URL
+            await updateMarketplaceCar(id, { imageUrl: storageUrl });
+            
+            // Update local state again with the permanent URL
+            setCars(prev => prev.map(car => 
+                car.id === id ? { ...car, imageUrl: storageUrl } : car
+            ));
+        } else {
+            // If it's already a URL (e.g. fallback), just save it
+            await updateMarketplaceCar(id, { imageUrl: base64Image });
+        }
+    } catch (error) {
+      console.error("Failed to save image to DB:", error);
     }
   };
 
-  const handleResetMarketplace = async () => {
-    if (confirm('Deseja restaurar os carros originais? Todas as imagens geradas serão perdidas.')) {
-      try {
-        setIsLoadingDB(true);
-        await carStorage.clear();
-        // Initialize will re-populate with MOCK data since DB is empty
-        await carStorage.initialize(); 
-        const resetCars = await carStorage.getAll();
-        setCars(resetCars);
-      } catch (error) {
-        console.error('Failed to reset marketplace:', error);
-      } finally {
-        setIsLoadingDB(false);
+  const handleToggleLike = async (id: string) => {
+    const car = cars.find(c => c.id === id);
+    if (!car) return;
+
+    const newIsLiked = !car.isLiked;
+    const newLikes = newIsLiked ? car.likes + 1 : Math.max(0, car.likes - 1);
+
+    const updatedCars = cars.map(c => {
+      if (c.id === id) {
+        return { ...c, isLiked: newIsLiked, likes: newLikes };
       }
+      return c;
+    });
+    
+    setCars(updatedCars);
+
+    try {
+        await updateMarketplaceCar(id, { isLiked: newIsLiked, likes: newLikes });
+    } catch (error) {
+        console.error("Failed to save like to DB:", error);
     }
   };
 
@@ -196,7 +236,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ onSelectCar }) => {
   if (isLoadingDB) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-100px)]">
-        <Loader text="Carregando Garagem..." />
+        <Loader text="Carregando Loja..." />
       </div>
     );
   }
@@ -262,6 +302,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ onSelectCar }) => {
             car={car} 
             onSelectCar={onSelectCar} 
             onUpdateImage={handleUpdateCarImage}
+            onToggleLike={handleToggleLike}
           />
         ))}
       </div>
@@ -271,16 +312,6 @@ const Marketplace: React.FC<MarketplaceProps> = ({ onSelectCar }) => {
             <p className="text-gray-500">Nenhum carro encontrado. {aiFilteredIds !== null ? 'Tente reformular sua busca.' : 'Tente uma busca diferente.'}</p>
         </div>
       )}
-
-      <div className="flex justify-center pt-8 pb-4 border-t border-gray-800">
-          <button 
-            onClick={handleResetMarketplace}
-            className="flex items-center gap-2 text-gray-500 hover:text-brand-red transition-colors text-sm"
-          >
-            <RotateCcw size={16} />
-            <span>Restaurar Padrões da Loja</span>
-          </button>
-      </div>
     </div>
   );
 };
