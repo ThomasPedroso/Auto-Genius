@@ -1,0 +1,80 @@
+<script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+    "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
+    "firebase/storage": "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/"
+  }
+}
+</script>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Auto Genius</title>
+    <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Satoshi', 'sans-serif'],
+            },
+            colors: {
+              gray: {
+                900: '#292929', // Background RGB(41, 41, 41)
+                800: '#333333', // Slightly lighter for cards
+                400: '#999999', // Secondary Text RGB(153,153,153)
+                300: '#A2A9AD', // Accent Gray RGB(162, 169, 173)
+              },
+              white: '#D1D1D1', // Primary Text RGB(209,209,209)
+              brand: {
+                orange: '#EC6C24',
+                red: '#CE0E2D',
+                teal: '#06BCC1',
+                blue: '#175AC8',
+                'orange-dark': '#B44A0E',
+                'red-dark': '#86091D',
+                'teal-dark': '#0A5D5F',
+                'blue-dark': '#141A14',
+              }
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              zoomIn: {
+                '0%': { opacity: '0', transform: 'scale(0.95)' },
+                '100%': { opacity: '1', transform: 'scale(1)' },
+              },
+              spin: {
+                from: { transform: 'rotate(0deg)' },
+                to: { transform: 'rotate(360deg)' },
+              }
+            },
+            animation: {
+              fadeIn: 'fadeIn 0.2s ease-out',
+              zoomIn: 'zoomIn 0.2s ease-out',
+              spin: 'spin 1s linear infinite',
+            }
+          }
+        }
+      }
+    </script>
+  </head>
+  <body class="bg-gray-900 text-white">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
