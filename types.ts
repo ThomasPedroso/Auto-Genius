@@ -44,7 +44,9 @@ export interface User {
   birthDate?: string;
   monthlyIncome?: number;
   occupation?: string;
-  
+  // CNH (Driver's License)
+  cnhImageUrl?: string;
+
   gamification: {
     level: GamificationLevel;
     points: number;
