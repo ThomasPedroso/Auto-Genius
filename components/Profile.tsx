@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import type { User, Car } from '../types';
-import { Wrench, FileText, Calendar, Shield, Plus, MapPin, Edit3, Car as CarIcon, Upload, Lock, Globe, Instagram, ArrowLeft, Trash2, CreditCard, CheckCircle, X } from 'lucide-react';
+import { Wrench, FileText, Calendar, Shield, Plus, MapPin, Edit3, Car as CarIcon, Upload, Lock, Globe, Instagram, ArrowLeft, Trash2 } from 'lucide-react';
 import { getVehicleHealthAnalysis } from '../services/geminiService';
 import { checkVehicleStatus, SimulationResult } from '../services/mockApiService';
 import { uploadImage } from '../services/firebaseService';
@@ -95,25 +95,6 @@ const Profile: React.FC<ProfileProps> = ({
           setIsUploading(false);
       }
     }
-  };
-
-  const handleCnhUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setIsUploading(true);
-      try {
-        const downloadURL = await uploadImage(file, `users/${user.name}/cnh_${Date.now()}`);
-        setTempProfile(prev => ({ ...prev, cnhImageUrl: downloadURL }));
-      } catch (error) {
-        console.error("CNH upload failed", error);
-      } finally {
-        setIsUploading(false);
-      }
-    }
-  };
-
-  const handleRemoveCnh = () => {
-    setTempProfile(prev => ({ ...prev, cnhImageUrl: '' }));
   };
 
   const openAddCarModal = () => {
@@ -308,35 +289,6 @@ const Profile: React.FC<ProfileProps> = ({
                 <textarea value={tempProfile.bio} onChange={e => setTempProfile({...tempProfile, bio: e.target.value})} className="w-full bg-gray-700 p-2 rounded text-white" rows={3} placeholder="Bio"/>
                 <input value={tempProfile.location} onChange={e => setTempProfile({...tempProfile, location: e.target.value})} className="w-full bg-gray-700 p-2 rounded text-white" placeholder="Cidade, UF"/>
                 {locationError && <p className="text-red-400 text-xs">{locationError}</p>}
-
-                {/* CNH Upload */}
-                <div className="bg-gray-700/30 p-4 rounded-lg space-y-3">
-                  <div className="flex items-center gap-2">
-                    <CreditCard size={18} className="text-brand-orange" />
-                    <span className="text-sm font-semibold text-white">CNH (Carteira de Motorista)</span>
-                  </div>
-
-                  {tempProfile.cnhImageUrl ? (
-                    <div className="relative">
-                      <div className="flex items-center gap-2 bg-green-900/30 border border-green-700/50 p-3 rounded-lg">
-                        <CheckCircle size={18} className="text-green-400 shrink-0" />
-                        <span className="text-sm text-green-300 flex-1">CNH enviada com sucesso</span>
-                        <button onClick={handleRemoveCnh} className="text-gray-400 hover:text-red-400 transition-colors p-1" title="Remover CNH">
-                          <X size={16} />
-                        </button>
-                      </div>
-                      <img src={tempProfile.cnhImageUrl} alt="CNH" className="mt-2 rounded-lg max-h-40 w-full object-cover border border-gray-600" />
-                    </div>
-                  ) : (
-                    <label className={`cursor-pointer bg-gray-700 hover:bg-gray-600 px-3 py-3 rounded-lg text-sm flex items-center justify-center gap-2 w-full border border-dashed border-gray-500 transition-colors ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                      <Upload size={16} className="text-brand-orange" />
-                      <span className="text-gray-300">{isUploading ? 'Enviando...' : 'Enviar foto da CNH'}</span>
-                      <input type="file" accept="image/*" className="hidden" onChange={handleCnhUpload} disabled={isUploading} />
-                    </label>
-                  )}
-                  <p className="text-xs text-gray-500">Envie uma foto legível da frente da sua CNH. O documento será usado para completar seu cadastro.</p>
-                </div>
-
                 <button onClick={handleSaveProfile} disabled={isUploading} className="w-full bg-brand-blue text-white font-bold py-2 rounded disabled:opacity-50">{isUploading ? 'Salvando...' : 'Salvar'}</button>
              </div>
           </Modal>
