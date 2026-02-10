@@ -19,6 +19,7 @@ export interface User {
   birthDate?: string;
   monthlyIncome?: number;
   occupation?: string;
+  cnhImageUrl?: string;
   gamification: {
     level: GamificationLevel;
     points: number;
