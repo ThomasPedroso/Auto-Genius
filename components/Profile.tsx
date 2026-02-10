@@ -75,6 +75,7 @@ const Profile: React.FC<ProfileProps> = ({
   // CNH OCR State
   const [extractedCnhData, setExtractedCnhData] = useState<CnhData | null>(null);
   const [showCnhConfirmation, setShowCnhConfirmation] = useState(false);
+  const [autoFilledFields, setAutoFilledFields] = useState<Set<string>>(new Set());
 
   const handleSaveProfile = () => {
     if (tempProfile.location && !/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+,\s*[A-Z]{2}$/.test(tempProfile.location)) {
@@ -136,12 +137,30 @@ const Profile: React.FC<ProfileProps> = ({
 
   const handleConfirmCnhData = () => {
     if (extractedCnhData) {
-      setTempProfile(prev => ({
-        ...prev,
-        name: extractedCnhData.name || prev.name,
-        cpf: extractedCnhData.cpf || prev.cpf,
-        birthDate: extractedCnhData.birthDate || prev.birthDate,
-      }));
+      const filledFields = new Set<string>();
+
+      const updates: Partial<User> = { ...tempProfile };
+
+      if (extractedCnhData.name) {
+        updates.name = extractedCnhData.name;
+        filledFields.add('name');
+      }
+      if (extractedCnhData.cpf) {
+        updates.cpf = extractedCnhData.cpf;
+        filledFields.add('cpf');
+      }
+      if (extractedCnhData.birthDate) {
+        updates.birthDate = extractedCnhData.birthDate;
+        filledFields.add('birthDate');
+      }
+
+      setTempProfile(updates as User);
+      setAutoFilledFields(filledFields);
+
+      // Clear highlight after 3 seconds
+      setTimeout(() => {
+        setAutoFilledFields(new Set());
+      }, 3000);
     }
     setShowCnhConfirmation(false);
   };
@@ -338,10 +357,116 @@ const Profile: React.FC<ProfileProps> = ({
                         <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform ${tempProfile.isPublicProfile ? 'left-7' : 'left-1'}`}></div>
                     </button>
                 </div>
-                <input value={tempProfile.name} onChange={e => setTempProfile({...tempProfile, name: e.target.value})} className="w-full bg-gray-700 p-2 rounded text-white" placeholder="Nome"/>
+                <div>
+                  <input
+                    value={tempProfile.name}
+                    onChange={e => setTempProfile({...tempProfile, name: e.target.value})}
+                    className={`w-full p-2 rounded text-white transition-all duration-300 ${
+                      autoFilledFields.has('name')
+                        ? 'bg-brand-blue/30 border-2 border-brand-blue animate-pulse'
+                        : 'bg-gray-700'
+                    }`}
+                    placeholder="Nome"
+                  />
+                  {autoFilledFields.has('name') && (
+                    <p className="text-xs text-brand-blue mt-1 flex items-center gap-1">
+                      <CheckCircle size={12} /> Preenchido automaticamente
+                    </p>
+                  )}
+                </div>
                 <textarea value={tempProfile.bio} onChange={e => setTempProfile({...tempProfile, bio: e.target.value})} className="w-full bg-gray-700 p-2 rounded text-white" rows={3} placeholder="Bio"/>
                 <input value={tempProfile.location} onChange={e => setTempProfile({...tempProfile, location: e.target.value})} className="w-full bg-gray-700 p-2 rounded text-white" placeholder="Cidade, UF"/>
                 {locationError && <p className="text-red-400 text-xs">{locationError}</p>}
+
+                {/* Credit Analysis / Registration Fields */}
+                <div className="bg-gray-700/30 p-4 rounded-lg space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FileText size={18} className="text-brand-blue" />
+                    <span className="text-sm font-semibold text-white">Dados Cadastrais</span>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs text-gray-400 mb-1 block">Email</label>
+                      <input
+                        value={tempProfile.email || ''}
+                        onChange={e => setTempProfile({...tempProfile, email: e.target.value})}
+                        className="w-full bg-gray-700 p-2 rounded text-white text-sm"
+                        placeholder="seu@email.com"
+                        type="email"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs text-gray-400 mb-1 block">Telefone</label>
+                      <input
+                        value={tempProfile.phone || ''}
+                        onChange={e => setTempProfile({...tempProfile, phone: e.target.value})}
+                        className="w-full bg-gray-700 p-2 rounded text-white text-sm"
+                        placeholder="(00) 00000-0000"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs text-gray-400 mb-1 block">CPF</label>
+                      <input
+                        value={tempProfile.cpf || ''}
+                        onChange={e => setTempProfile({...tempProfile, cpf: e.target.value})}
+                        className={`w-full p-2 rounded text-white text-sm transition-all duration-300 ${
+                          autoFilledFields.has('cpf')
+                            ? 'bg-brand-blue/30 border-2 border-brand-blue animate-pulse'
+                            : 'bg-gray-700'
+                        }`}
+                        placeholder="000.000.000-00"
+                      />
+                      {autoFilledFields.has('cpf') && (
+                        <p className="text-xs text-brand-blue mt-1 flex items-center gap-1">
+                          <CheckCircle size={12} /> Preenchido automaticamente
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="text-xs text-gray-400 mb-1 block">Data de Nascimento</label>
+                      <input
+                        value={tempProfile.birthDate || ''}
+                        onChange={e => setTempProfile({...tempProfile, birthDate: e.target.value})}
+                        className={`w-full p-2 rounded text-white text-sm transition-all duration-300 ${
+                          autoFilledFields.has('birthDate')
+                            ? 'bg-brand-blue/30 border-2 border-brand-blue animate-pulse'
+                            : 'bg-gray-700'
+                        }`}
+                        placeholder="DD/MM/AAAA"
+                      />
+                      {autoFilledFields.has('birthDate') && (
+                        <p className="text-xs text-brand-blue mt-1 flex items-center gap-1">
+                          <CheckCircle size={12} /> Preenchido automaticamente
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="text-xs text-gray-400 mb-1 block">Renda Mensal</label>
+                      <input
+                        value={tempProfile.monthlyIncome || ''}
+                        onChange={e => setTempProfile({...tempProfile, monthlyIncome: Number(e.target.value)})}
+                        className="w-full bg-gray-700 p-2 rounded text-white text-sm"
+                        placeholder="R$ 0,00"
+                        type="number"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs text-gray-400 mb-1 block">Ocupação</label>
+                      <input
+                        value={tempProfile.occupation || ''}
+                        onChange={e => setTempProfile({...tempProfile, occupation: e.target.value})}
+                        className="w-full bg-gray-700 p-2 rounded text-white text-sm"
+                        placeholder="Ex: Engenheiro"
+                      />
+                    </div>
+                  </div>
+                </div>
 
                 {/* CNH Upload */}
                 <div className="bg-gray-700/30 p-4 rounded-lg space-y-3">
