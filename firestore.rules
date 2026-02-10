@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow authenticated users to read their own garage (for onSnapshot real-time)
+    match /users/{userId}/garage/{carId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; // All writes go through backend API (Admin SDK)
+    }
+
+    // Allow authenticated users to read user profiles
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if false; // All writes go through backend API
+    }
+
+    // Marketplace - read for authenticated users
+    match /marketplace_cars/{carId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // Posts - read for authenticated users
+    match /posts/{postId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // Events - read for authenticated users
+    match /events/{eventId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
