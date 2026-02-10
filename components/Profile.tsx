@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import type { User, Car } from '../types';
 import { Wrench, FileText, Calendar, Shield, Plus, MapPin, Edit3, Car as CarIcon, Upload, Lock, Globe, Instagram, ArrowLeft, Trash2, CreditCard, CheckCircle, X } from 'lucide-react';
-import { getVehicleHealthAnalysis } from '../services/geminiService';
+import { getVehicleHealthAnalysis, extractCnhData, type CnhData } from '../services/geminiService';
 import { checkVehicleStatus, SimulationResult } from '../services/mockApiService';
 import { uploadImage } from '../services/firebaseService';
 import Modal from './common/Modal';
@@ -72,6 +72,10 @@ const Profile: React.FC<ProfileProps> = ({
   const [locationError, setLocationError] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
+  // CNH OCR State
+  const [extractedCnhData, setExtractedCnhData] = useState<CnhData | null>(null);
+  const [showCnhConfirmation, setShowCnhConfirmation] = useState(false);
+
   const handleSaveProfile = () => {
     if (tempProfile.location && !/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+,\s*[A-Z]{2}$/.test(tempProfile.location)) {
         setLocationError('Formato inválido. Use: Cidade, UF (Ex: São Paulo, SP)');
@@ -102,10 +106,22 @@ const Profile: React.FC<ProfileProps> = ({
     if (file) {
       setIsUploading(true);
       try {
+        // Upload da imagem/PDF
         const downloadURL = await uploadImage(file, `users/${user.name}/cnh_${Date.now()}`);
         setTempProfile(prev => ({ ...prev, cnhImageUrl: downloadURL }));
+
+        // Extração de dados via OCR
+        try {
+          const cnhData = await extractCnhData(file);
+          setExtractedCnhData(cnhData);
+          setShowCnhConfirmation(true);
+        } catch (ocrError) {
+          console.warn("OCR failed, but file was uploaded successfully:", ocrError);
+          // Continua sem OCR se falhar
+        }
       } catch (error) {
         console.error("CNH upload failed", error);
+        alert("Falha no upload. Verifique sua conexão e tente novamente.");
       } finally {
         setIsUploading(false);
       }
@@ -114,6 +130,24 @@ const Profile: React.FC<ProfileProps> = ({
 
   const handleRemoveCnh = () => {
     setTempProfile(prev => ({ ...prev, cnhImageUrl: '' }));
+    setExtractedCnhData(null);
+    setShowCnhConfirmation(false);
+  };
+
+  const handleConfirmCnhData = () => {
+    if (extractedCnhData) {
+      setTempProfile(prev => ({
+        ...prev,
+        name: extractedCnhData.name || prev.name,
+        cpf: extractedCnhData.cpf || prev.cpf,
+        birthDate: extractedCnhData.birthDate || prev.birthDate,
+      }));
+    }
+    setShowCnhConfirmation(false);
+  };
+
+  const handleCancelCnhData = () => {
+    setShowCnhConfirmation(false);
   };
 
   const openAddCarModal = () => {
@@ -330,12 +364,77 @@ const Profile: React.FC<ProfileProps> = ({
                   ) : (
                     <label className={`cursor-pointer bg-gray-700 hover:bg-gray-600 px-3 py-3 rounded-lg text-sm flex items-center justify-center gap-2 w-full border border-dashed border-gray-500 transition-colors ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
                       <Upload size={16} className="text-brand-orange" />
-                      <span className="text-gray-300">{isUploading ? 'Enviando...' : 'Enviar foto da CNH'}</span>
-                      <input type="file" accept="image/*" className="hidden" onChange={handleCnhUpload} disabled={isUploading} />
+                      <span className="text-gray-300">{isUploading ? 'Enviando...' : 'Enviar foto ou PDF da CNH'}</span>
+                      <input type="file" accept="image/*,.pdf,application/pdf" className="hidden" onChange={handleCnhUpload} disabled={isUploading} />
                     </label>
                   )}
-                  <p className="text-xs text-gray-500">Envie uma foto legível da frente da sua CNH. O documento será usado para completar seu cadastro.</p>
+                  <p className="text-xs text-gray-500">Envie uma foto ou PDF legível da frente da sua CNH. Os dados serão extraídos automaticamente.</p>
                 </div>
+
+                {/* CNH Data Confirmation */}
+                {showCnhConfirmation && extractedCnhData && (
+                  <div className="bg-blue-900/20 border border-brand-blue/50 p-4 rounded-lg space-y-3 animate-zoomIn">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle size={18} className="text-brand-blue" />
+                      <span className="text-sm font-semibold text-white">Dados extraídos da CNH</span>
+                    </div>
+
+                    <div className="space-y-2 bg-gray-800/50 p-3 rounded-lg text-sm">
+                      {extractedCnhData.name && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Nome:</span>
+                          <span className="text-white font-medium">{extractedCnhData.name}</span>
+                        </div>
+                      )}
+                      {extractedCnhData.cpf && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">CPF:</span>
+                          <span className="text-white font-medium">{extractedCnhData.cpf}</span>
+                        </div>
+                      )}
+                      {extractedCnhData.birthDate && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Data de Nascimento:</span>
+                          <span className="text-white font-medium">{extractedCnhData.birthDate}</span>
+                        </div>
+                      )}
+                      {extractedCnhData.cnhNumber && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Nº CNH:</span>
+                          <span className="text-white font-medium">{extractedCnhData.cnhNumber}</span>
+                        </div>
+                      )}
+                      {extractedCnhData.cnhCategory && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Categoria:</span>
+                          <span className="text-white font-medium">{extractedCnhData.cnhCategory}</span>
+                        </div>
+                      )}
+                      {extractedCnhData.cnhValidity && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Validade:</span>
+                          <span className="text-white font-medium">{extractedCnhData.cnhValidity}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleConfirmCnhData}
+                        className="flex-1 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold py-2 px-4 rounded transition-colors"
+                      >
+                        Aplicar ao Perfil
+                      </button>
+                      <button
+                        onClick={handleCancelCnhData}
+                        className="flex-1 bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold py-2 px-4 rounded transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 text-center">Os dados acima serão preenchidos automaticamente no seu perfil.</p>
+                  </div>
+                )}
 
                 <button onClick={handleSaveProfile} disabled={isUploading} className="w-full bg-brand-blue text-white font-bold py-2 rounded disabled:opacity-50">{isUploading ? 'Salvando...' : 'Salvar'}</button>
              </div>

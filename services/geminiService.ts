@@ -15,6 +15,92 @@ const getAiClient = () => {
   return new GoogleGenAI({ apiKey });
 };
 
+// Helper to convert File to base64
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
+export interface CnhData {
+  name?: string;
+  cpf?: string;
+  birthDate?: string;
+  cnhNumber?: string;
+  cnhCategory?: string;
+  cnhValidity?: string;
+  rg?: string;
+}
+
+export const extractCnhData = async (file: File): Promise<CnhData> => {
+  try {
+    const ai = getAiClient();
+
+    // Convert file to base64
+    const base64Data = await fileToBase64(file);
+    const mimeType = file.type || 'image/jpeg';
+
+    const prompt = `
+      Você é um sistema especializado em extrair dados de CNH (Carteira Nacional de Habilitação) brasileira.
+
+      Analise a imagem/documento fornecido e extraia os seguintes dados em formato JSON:
+      - name: Nome completo do portador
+      - cpf: CPF (apenas números, sem formatação)
+      - birthDate: Data de nascimento no formato DD/MM/YYYY
+      - cnhNumber: Número da CNH
+      - cnhCategory: Categoria da CNH (A, B, AB, C, D, E, etc.)
+      - cnhValidity: Data de validade no formato DD/MM/YYYY
+      - rg: RG (se disponível)
+
+      Se algum campo não estiver legível ou disponível, retorne null para esse campo.
+      Responda APENAS com o JSON, sem texto adicional.
+    `;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: {
+        parts: [
+          { text: prompt },
+          {
+            inlineData: {
+              mimeType: mimeType,
+              data: base64Data
+            }
+          }
+        ]
+      },
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            name: { type: Type.STRING, nullable: true },
+            cpf: { type: Type.STRING, nullable: true },
+            birthDate: { type: Type.STRING, nullable: true },
+            cnhNumber: { type: Type.STRING, nullable: true },
+            cnhCategory: { type: Type.STRING, nullable: true },
+            cnhValidity: { type: Type.STRING, nullable: true },
+            rg: { type: Type.STRING, nullable: true }
+          }
+        }
+      }
+    });
+
+    const result = JSON.parse(response.text || '{}');
+    console.log('CNH OCR Result:', result);
+    return result as CnhData;
+  } catch (error) {
+    console.error('Gemini OCR Error:', error);
+    throw new Error('Não foi possível extrair os dados da CNH. Verifique se a imagem está legível.');
+  }
+};
+
 export const generateFinancialExplanation = async (prompt: string): Promise<string> => {
   try {
     const ai = getAiClient();
