@@ -7,11 +7,20 @@ const getAiClient = () => {
   let apiKey = '';
   try {
     if (typeof process !== 'undefined' && process.env) {
-      apiKey = process.env.API_KEY || '';
+      // Try multiple possible environment variable names
+      apiKey = process.env.VITE_GEMINI_API_KEY ||
+               process.env.GEMINI_API_KEY ||
+               process.env.API_KEY ||
+               '';
     }
   } catch (e) {
     console.warn('Error accessing process.env', e);
   }
+
+  if (!apiKey) {
+    console.error('⚠️ Gemini API key not found. Please set VITE_GEMINI_API_KEY in your .env file');
+  }
+
   return new GoogleGenAI({ apiKey });
 };
 
@@ -44,7 +53,19 @@ export const extractCnhData = async (file: File): Promise<CnhData> => {
 
     // Convert file to base64
     const base64Data = await fileToBase64(file);
-    const mimeType = file.type || 'image/jpeg';
+    let mimeType = file.type || 'image/jpeg';
+
+    // Fix PDF mime type if needed
+    if (file.name.toLowerCase().endsWith('.pdf')) {
+      mimeType = 'application/pdf';
+    }
+
+    console.log('📄 Processing CNH file:', {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      detectedMimeType: mimeType
+    });
 
     const prompt = `
       Você é um sistema especializado em extrair dados de CNH (Carteira Nacional de Habilitação) brasileira.
@@ -93,11 +114,21 @@ export const extractCnhData = async (file: File): Promise<CnhData> => {
     });
 
     const result = JSON.parse(response.text || '{}');
-    console.log('CNH OCR Result:', result);
+    console.log('✅ CNH OCR Result:', result);
     return result as CnhData;
-  } catch (error) {
-    console.error('Gemini OCR Error:', error);
-    throw new Error('Não foi possível extrair os dados da CNH. Verifique se a imagem está legível.');
+  } catch (error: any) {
+    console.error('❌ Gemini OCR Error:', error);
+
+    // Provide more specific error messages
+    if (error?.message?.includes('API key')) {
+      throw new Error('Erro: Chave da API Gemini não configurada. Configure VITE_GEMINI_API_KEY no arquivo .env');
+    } else if (error?.message?.includes('quota') || error?.message?.includes('429')) {
+      throw new Error('Limite de uso da API Gemini excedido. Tente novamente mais tarde.');
+    } else if (error?.message?.includes('permission')) {
+      throw new Error('A API Gemini não tem permissão para processar este tipo de arquivo.');
+    } else {
+      throw new Error(`Não foi possível extrair os dados da CNH. Verifique se a imagem/PDF está legível. Erro: ${error?.message || 'Desconhecido'}`);
+    }
   }
 };
 
