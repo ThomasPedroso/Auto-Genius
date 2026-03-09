@@ -31,12 +31,16 @@ export default function ProfilePage() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -z-10 translate-x-1/2 -translate-y-1/2" />
           <CardContent className="p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 justify-between z-10">
              <div className="flex items-center gap-6">
-                <div className="w-24 h-24 rounded-full bg-secondary flex items-center justify-center border-4 border-primary shadow-lg">
-                   <span className="text-4xl font-extrabold">{user!.displayName?.charAt(0) || "U"}</span>
+                <div className="w-24 h-24 rounded-full bg-secondary flex items-center justify-center border-4 border-primary shadow-lg overflow-hidden">
+                   {user.photoURL ? (
+                     <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                   ) : (
+                     <span className="text-4xl font-extrabold">{user.displayName?.charAt(0) || user.email?.charAt(0) || "U"}</span>
+                   )}
                 </div>
                 <div>
-                   <h1 className="text-3xl md:text-4xl font-black mb-1">{user!.displayName}</h1>
-                   <p className="text-muted-foreground">{user!.email}</p>
+                   <h1 className="text-3xl md:text-4xl font-black mb-1">{user.displayName || "Usuário"}</h1>
+                   <p className="text-muted-foreground">{user.email}</p>
                 </div>
              </div>
              
