@@ -11,7 +11,7 @@ export function Footer() {
             <Link href="/" className="flex items-center gap-2">
               <CarFront className="h-8 w-8 text-primary" />
               <span className="font-extrabold text-2xl tracking-tighter bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">
-                AUTO-GENIUS
+                GRUPO SERVOPA
               </span>
             </Link>
             <p className="text-muted-foreground text-sm">

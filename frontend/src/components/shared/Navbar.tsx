@@ -72,7 +72,7 @@ export function Navbar() {
         <Link href="/" className="flex items-center gap-2 mr-6">
           <CarFront className="h-8 w-8 text-primary group-hover:animate-pulse" />
           <span className="font-extrabold text-2xl tracking-tighter hidden sm:inline-block bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">
-            AUTO-GENIUS
+            GRUPO SERVOPA
           </span>
         </Link>
         
