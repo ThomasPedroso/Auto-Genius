@@ -55,9 +55,9 @@ export default function ProfilePage() {
              <div className="flex-1 w-full max-w-md bg-secondary/30 p-6 rounded-2xl border border-border/50">
                <div className="flex justify-between items-end mb-3">
                  <div>
-                    <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider mb-1 block">Current Tier</span>
+                    <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider mb-1 block">Nível Atual</span>
                     <Badge variant="default" className="text-lg py-1 px-4 shadow-md bg-gradient-to-r from-yellow-500 to-amber-600 border-none">
-                       <Trophy className="w-4 h-4 mr-2" /> {user!.level}
+                       <Trophy className="w-4 h-4 mr-2" /> Ouro
                     </Badge>
                  </div>
                  <div className="text-right">
@@ -73,7 +73,7 @@ export default function ProfilePage() {
                  />
                </div>
                <p className="text-xs text-right text-muted-foreground font-medium">
-                 {1000 - user!.xp > 0 ? `${1000 - user!.xp} XP to Platinum Tier` : 'Maximum Tier Reached!'}
+                 {1000 - user!.xp > 0 ? `Faltam ${1000 - user!.xp} XP para Próximo Nível` : 'Nível Máximo Atingido!'}
                </p>
              </div>
           </CardContent>
@@ -82,32 +82,32 @@ export default function ProfilePage() {
        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Active Rewards/Perks */}
           <div className="space-y-6 lg:col-span-1">
-             <h2 className="text-2xl font-bold tracking-tight">Active Perks</h2>
+             <h2 className="text-2xl font-bold tracking-tight">Benefícios Ativos</h2>
              <Card className="border-border/50 shadow-md">
                 <CardHeader>
-                   <CardTitle className="flex items-center gap-2"><Gift className="text-primary w-5 h-5"/> Your Benefits</CardTitle>
-                   <CardDescription>Automatically applied at checkout.</CardDescription>
+                   <CardTitle className="flex items-center gap-2"><Gift className="text-primary w-5 h-5"/> Suas Vantagens</CardTitle>
+                   <CardDescription>Aplicadas automaticamente no carrinho.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                    <div className="flex items-start gap-4 p-3 bg-secondary/50 rounded-lg">
                      <Shield className="w-8 h-8 text-primary shrink-0" />
                      <div>
-                       <h4 className="font-bold">15% Off All Parts</h4>
-                       <p className="text-sm text-muted-foreground">Gold tier exclusive discount.</p>
+                       <h4 className="font-bold">15% Off em Peças</h4>
+                       <p className="text-sm text-muted-foreground">Desconto exclusivo para membros Ouro.</p>
                      </div>
                    </div>
                    <div className="flex items-start gap-4 p-3 bg-secondary/50 rounded-lg">
                      <Car className="w-8 h-8 text-primary shrink-0" />
                      <div>
-                       <h4 className="font-bold">2 Free Car Washes</h4>
-                       <p className="text-sm text-muted-foreground">Available to redeem anytime.</p>
+                       <h4 className="font-bold">2 Lavagens Grátis</h4>
+                       <p className="text-sm text-muted-foreground">Disponível para resgate a qualquer momento.</p>
                      </div>
                    </div>
                    <div className="flex items-start gap-4 p-3 bg-secondary/50 rounded-lg">
                      <Star className="w-8 h-8 text-primary shrink-0" />
                      <div>
-                       <h4 className="font-bold">Priority Scheduling</h4>
-                       <p className="text-sm text-muted-foreground">Skip the line for maintenance.</p>
+                       <h4 className="font-bold">Agendamento Prioritário</h4>
+                       <p className="text-sm text-muted-foreground">Pule a fila ao agendar manutenções.</p>
                      </div>
                    </div>
                 </CardContent>
@@ -117,7 +117,7 @@ export default function ProfilePage() {
           {/* History & Vehicles */}
           <div className="space-y-8 lg:col-span-2">
              <div>
-                <h2 className="text-2xl font-bold tracking-tight mb-6">Service History</h2>
+                 <h2 className="text-2xl font-bold tracking-tight mb-6">Histórico de Serviços</h2>
                 <Card className="border-border/50 shadow-md">
                   <CardContent className="p-0">
                     <div className="divide-y divide-border">
@@ -128,13 +128,13 @@ export default function ProfilePage() {
                                <Calendar className="w-5 h-5 text-primary" />
                              </div>
                              <div>
-                               <h4 className="font-bold">Premium Detailing & Wash</h4>
-                               <p className="text-sm text-muted-foreground">Oct 12, 2025 • 2023 Tesla Model S</p>
+                               <h4 className="font-bold">Lavagem Detalhada Premium</h4>
+                               <p className="text-sm text-muted-foreground">Out 12, 2025 • 2023 Tesla Model S</p>
                              </div>
                            </div>
                            <div className="flex items-center gap-4 w-full sm:w-auto mt-2 sm:mt-0">
                              <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 px-3 py-1 font-bold">+50 XP</Badge>
-                             <Button variant="ghost" size="sm">View Invoice</Button>
+                             <Button variant="ghost" size="sm">Ver Fatura</Button>
                            </div>
                          </div>
                        ))}
@@ -144,12 +144,12 @@ export default function ProfilePage() {
              </div>
              
              <div>
-                 <h2 className="text-2xl font-bold tracking-tight mb-6 flex items-center gap-2"><History className="w-6 h-6"/> Saved Vehicles</h2>
+                  <h2 className="text-2xl font-bold tracking-tight mb-6 flex items-center gap-2"><History className="w-6 h-6"/> Veículos Salvos</h2>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Card className="bg-muted/50 border-dashed border-2 flex items-center justify-center h-48 cursor-pointer hover:bg-muted/80 transition-colors group">
                        <div className="text-center group-hover:scale-105 transition-transform">
                           <Car className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-                          <p className="font-bold text-muted-foreground">Browse Marketplace</p>
+                          <p className="font-bold text-muted-foreground">Buscar no Marketplace</p>
                        </div>
                     </Card>
                  </div>

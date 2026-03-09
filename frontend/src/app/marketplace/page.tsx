@@ -28,13 +28,13 @@ export default function Marketplace() {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight">Premium Vehicles</h1>
-          <p className="text-muted-foreground mt-2">Find your next ultimate driving machine.</p>
+          <h1 className="text-4xl font-extrabold tracking-tight">Veículos Premium</h1>
+          <p className="text-muted-foreground mt-2">Encontre sua próxima máquina de dirigir definitiva.</p>
         </div>
         <div className="w-full md:w-auto flex gap-2">
           <div className="relative w-full md:w-80">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search make, model, or keywords..." className="pl-10 h-12 rounded-full border-primary/20 bg-secondary/50 focus-visible:ring-primary" />
+            <Input placeholder="Buscar marca, modelo ou palavras-chave..." className="pl-10 h-12 rounded-full border-primary/20 bg-secondary/50 focus-visible:ring-primary" />
           </div>
           <Button size="icon" variant="outline" className="h-12 w-12 rounded-full md:hidden">
             <Filter className="h-5 w-5 text-primary" />
@@ -49,11 +49,11 @@ export default function Marketplace() {
             <CardContent className="p-6 space-y-8">
               <div className="flex items-center gap-2 border-b border-border pb-4">
                 <SlidersHorizontal className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-bold">Advanced Filters</h2>
+                <h2 className="text-lg font-bold">Filtros Avançados</h2>
               </div>
               
               <div className="space-y-4">
-                <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Price Range</Label>
+                <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Faixa de Preço</Label>
                 <Slider 
                   defaultValue={[50000, 250000]} 
                   max={300000} 
@@ -68,7 +68,7 @@ export default function Marketplace() {
               </div>
 
               <div className="space-y-4">
-                 <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Make</Label>
+                 <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Marca</Label>
                  <div className="space-y-2">
                    {["Tesla", "Porsche", "Audi", "BMW", "Mercedes-Benz", "Rivian"].map(make => (
                      <div key={make} className="flex items-center gap-2">
@@ -80,18 +80,18 @@ export default function Marketplace() {
               </div>
 
               <div className="space-y-4">
-                 <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Vehicle Type</Label>
+                 <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Tipo de Veículo</Label>
                  <div className="flex flex-wrap gap-2">
-                   <Badge variant="default" className="cursor-pointer">All</Badge>
-                   <Badge variant="outline" className="cursor-pointer hover:bg-secondary">Gasoline</Badge>
+                   <Badge variant="default" className="cursor-pointer">Todos</Badge>
+                   <Badge variant="outline" className="cursor-pointer hover:bg-secondary">Combustão</Badge>
                    <Badge variant="outline" className="cursor-pointer hover:bg-secondary flex gap-1 items-center">
-                     <BatteryCharging className="w-3 h-3" /> Electric
+                     <BatteryCharging className="w-3 h-3" /> Elétrico
                    </Badge>
-                   <Badge variant="outline" className="cursor-pointer hover:bg-secondary">Hybrid</Badge>
+                   <Badge variant="outline" className="cursor-pointer hover:bg-secondary">Híbrido</Badge>
                  </div>
               </div>
 
-              <Button className="w-full h-12 font-bold shadow-md shadow-primary/20">Apply Filters</Button>
+              <Button className="w-full h-12 font-bold shadow-md shadow-primary/20">Aplicar Filtros</Button>
             </CardContent>
           </Card>
         </div>
@@ -99,9 +99,9 @@ export default function Marketplace() {
         {/* Listings Grid */}
         <div className="w-full lg:w-3/4">
           <div className="flex justify-between items-center mb-6">
-             <span className="text-sm text-muted-foreground font-medium">Showing {CARS.length} vehicles</span>
+             <span className="text-sm text-muted-foreground font-medium">Exibindo {CARS.length} veículos</span>
              <Button variant="ghost" size="sm" className="hidden sm:flex items-center gap-1 font-semibold">
-               Sort by: Featured <ChevronDown className="h-4 w-4" />
+               Ordenar por: Destaque <ChevronDown className="h-4 w-4" />
              </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -111,7 +111,7 @@ export default function Marketplace() {
                   <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent z-10" />
                   <div className="absolute top-4 left-4 z-20">
                     <Badge className={car.type === "Electric" ? "bg-green-500/20 text-green-500 hover:bg-green-500/30 font-bold border-green-500/50" : "font-bold bg-background/80 text-foreground backdrop-blur-md"}>
-                      {car.type}
+                      {car.type === "Electric" ? "Elétrico" : "Combustão"}
                     </Badge>
                   </div>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -136,7 +136,7 @@ export default function Marketplace() {
                 </CardContent>
                 <CardFooter className="p-5 pt-0 border-t border-border/30 mt-4">
                   <Button className="w-full font-bold group-hover:shadow-[0_0_15px_rgba(var(--primary),0.5)] transition-all">
-                    View Details
+                    Ver Detalhes
                   </Button>
                 </CardFooter>
               </Card>
@@ -145,7 +145,7 @@ export default function Marketplace() {
           
           <div className="mt-12 flex justify-center">
             <Button variant="outline" size="lg" className="w-full sm:w-auto h-12 px-8 border-2 font-semibold">
-              Load More Vehicles
+              Carregar Mais Veículos
             </Button>
           </div>
         </div>

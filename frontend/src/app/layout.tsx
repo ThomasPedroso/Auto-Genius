@@ -18,7 +18,7 @@ import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Auto-Genius | Premium Automotive Marketplace",
-  description: "Your premium destination for buying vehicles, purchasing parts, and scheduling top-tier automotive services.",
+  description: "Seu destino premium para comprar veículos, peças automobilísticas e agendar serviços automotivos de alta qualidade.",
 };
 
 export default function RootLayout({
@@ -27,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="pt-BR" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >

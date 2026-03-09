@@ -22,7 +22,7 @@ export default function PartsStore() {
   const addItem = useCartStore(state => state.addItem);
   const [activeCategory, setActiveCategory] = useState("All");
 
-  const categories = ["All", "Performance", "Exterior", "Interior", "Lighting", "Brakes", "Suspension", "Maintenance"];
+  const categories = ["Todos", "Performance", "Exterior", "Interior", "Iluminação", "Freios", "Suspensão", "Manutenção"];
 
   const handleAddToCart = (part: any) => {
     addItem({
@@ -32,10 +32,10 @@ export default function PartsStore() {
       imageUrl: part.imageUrl,
       category: part.category
     });
-    toast.success(`${part.name} added to cart!`);
+    toast.success(`${part.name} adicionado ao carrinho!`);
   };
 
-  const filteredParts = activeCategory === "All" 
+  const filteredParts = activeCategory === "Todos" 
     ? PARTS 
     : PARTS.filter(p => p.category === activeCategory);
 
@@ -43,19 +43,19 @@ export default function PartsStore() {
     <div className="container mx-auto px-4 py-8">
       {/* Search Header */}
       <div className="bg-secondary/40 rounded-3xl p-8 mb-12 shadow-sm border border-border/50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-secondary to-background">
-        <h1 className="text-4xl font-extrabold tracking-tight mb-4 text-center">Parts & Accessories Store</h1>
+        <h1 className="text-4xl font-extrabold tracking-tight mb-4 text-center">Loja de Peças e Acessórios</h1>
         <p className="text-muted-foreground text-center mb-8 max-w-2xl mx-auto text-lg">
-          Upgrade your vehicle with our selection of premium OEM and high-performance aftermarket parts. Earn XP with every purchase.
+          Aprimore seu veículo com nossa seleção de peças originais e itens de alta performance. Ganhe XP em todas as compras.
         </p>
         
         <div className="max-w-2xl mx-auto relative flex items-center">
             <Search className="absolute left-4 w-5 h-5 text-muted-foreground" />
             <Input 
-              placeholder="Search parts by name, OEM number, or vehicle..." 
+              placeholder="Buscar por nome, número OEM ou fabricante..." 
               className="pl-12 h-14 text-lg rounded-full shadow-lg border-primary/20 bg-background/90 focus-visible:ring-primary backdrop-blur-sm"
             />
             <Button className="absolute right-1.5 rounded-full h-11 px-6 shadow-md shadow-primary/20 hover:scale-105 transition-transform">
-              Find Parts
+              Buscar
             </Button>
         </div>
       </div>
@@ -99,7 +99,7 @@ export default function PartsStore() {
                <h3 className="text-lg font-bold leading-tight mb-2 line-clamp-2">{part.name}</h3>
                <div className="mt-auto pt-4 flex items-end justify-between">
                  <div>
-                   <span className="text-xs text-muted-foreground block mb-0.5">Price</span>
+                   <span className="text-xs text-muted-foreground block mb-0.5">Preço</span>
                    <span className="text-2xl font-black text-primary">${part.price.toLocaleString()}</span>
                  </div>
                  <div className="text-xs font-semibold text-green-500 bg-green-500/10 px-2 py-1 rounded">
@@ -110,7 +110,7 @@ export default function PartsStore() {
             
             <CardFooter className="p-5 pt-0 border-t border-border/20 mt-2 gap-2">
                <Button onClick={() => handleAddToCart(part)} className="w-full font-bold shadow-sm flex gap-2 group-hover:bg-primary/90 transition-colors">
-                 <ShoppingCart className="w-4 h-4" /> Add to Cart
+                 <ShoppingCart className="w-4 h-4" /> Adicionar ao Carrinho
                </Button>
             </CardFooter>
           </Card>

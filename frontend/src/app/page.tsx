@@ -17,24 +17,24 @@ export default function Home() {
 
         <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center">
           <Badge className="mb-6 px-4 py-1 text-sm rounded-full backdrop-blur-md bg-secondary/30 border-primary/20 text-primary uppercase font-bold tracking-wider">
-            Discover the future of mobility
+            Descubra o futuro da mobilidade
           </Badge>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8 max-w-4xl text-foreground">
-            Your Ultimate <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent-foreground">Automotive Experience</span>
+            Sua <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent-foreground">Experiência Automotiva</span> Definitiva
           </h1>
           <p className="max-w-[700px] text-lg md:text-xl text-muted-foreground mb-12 font-medium leading-relaxed">
-            Buy premium vehicles, shop specialized parts, schedule certified services, and earn exclusive rewards as you go.
+            Compre veículos premium, adquira peças autênticas, agende serviços qualificados e ganhe recompensas exclusivas enquanto usa a plataforma.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
             <Link href="/marketplace">
               <Button size="lg" className="w-full sm:w-auto text-lg h-14 px-8 group font-semibold shadow-lg shadow-primary/20">
-                Explore Marketplace
+                Explorar Marketplace
                 <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
             <Link href="/parts">
               <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg h-14 px-8 border-2 font-semibold">
-                Shop Parts
+                Loja de Peças
               </Button>
             </Link>
           </div>
@@ -45,24 +45,24 @@ export default function Home() {
       <section className="py-24 bg-secondary">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">Why Choose Auto-Genius?</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">We streamline everything related to your car, combining shopping, parts, and service into one powerful platform.</p>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">Por que escolher a Auto-Genius?</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Nós simplificamos tudo relacionado ao seu carro, combinando mercado de veículos, peças e oficina em uma plataforma unificada.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <FeatureCard 
               icon={<Search className="w-10 h-10 text-primary" />}
-              title="Intelligent Marketplace"
-              description="Browse top-tier vehicles with advanced filtering and AI-powered recommendations tailored to your lifestyle."
+              title="Marketplace Inteligente"
+              description="Navegue por veículos de alto padrão com filtros avançados e recomendações por IA ajustadas ao seu estilo."
             />
             <FeatureCard 
               icon={<Settings2 className="w-10 h-10 text-primary" />}
-              title="Comprehensive Auto Store"
-              description="Find exact fitments for your vehicle from our massive catalogue of certified OEM and aftermarket parts."
+              title="Loja Automotiva Completa"
+              description="Encontre componentes de alta performance do nosso enorme catálogo de peças originais e exclusivas."
             />
             <FeatureCard 
               icon={<ShieldCheck className="w-10 h-10 text-primary" />}
-              title="Trusted Service & Rewards"
-              description="Schedule maintenance effortlessly and earn XP with every transaction to unlock Platinum tier benefits."
+              title="Serviço de Confiança e Recompensas"
+              description="Agende manutenções sem esforço e ganhe XP a cada transação para desbloquear benefícios Platina."
             />
           </div>
         </div>
@@ -73,16 +73,16 @@ export default function Home() {
          <div className="absolute right-0 top-0 -z-10 m-auto h-[400px] w-[400px] rounded-full bg-primary/10 blur-[120px]"></div>
          <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-16">
             <div className="md:w-1/2 space-y-6">
-              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">Level Up Your Ride</h2>
+              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">Suba de Nível com seu Carro</h2>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                Join our exclusive loyalty program. Every purchase, every service, and every referral earns you XP. Unlock tiers from Bronze to Platinum for incredible perks.
+                Junte-se ao nosso programa de fidelidade exclusivo. A cada compra ou serviço você ganha XP. Desbloqueie níveis de Bronze a Platina por vantagens incríveis.
               </p>
               <ul className="space-y-4">
-                <li className="flex items-center gap-3"><Shield className="text-primary w-6 h-6" /><span className="text-lg font-medium">Free Car Washes</span></li>
-                <li className="flex items-center gap-3"><Map className="text-primary w-6 h-6" /><span className="text-lg font-medium">Priority Service Scheduling</span></li>
-                <li className="flex items-center gap-3"><Settings2 className="text-primary w-6 h-6" /><span className="text-lg font-medium">Up to 20% Off Parts</span></li>
+                <li className="flex items-center gap-3"><Shield className="text-primary w-6 h-6" /><span className="text-lg font-medium">Lavagem de Carro Grátis</span></li>
+                <li className="flex items-center gap-3"><Map className="text-primary w-6 h-6" /><span className="text-lg font-medium">Prioridade no Agendamento da Oficina</span></li>
+                <li className="flex items-center gap-3"><Settings2 className="text-primary w-6 h-6" /><span className="text-lg font-medium">Até 20% de desconto em Peças</span></li>
               </ul>
-              <Button size="lg" className="mt-8 shadow-xl shadow-primary/20">Sign Up & Start Earning</Button>
+              <Button size="lg" className="mt-8 shadow-xl shadow-primary/20">Cadastrar e Começar a Ganhar</Button>
             </div>
             
             {/* Gamification Mockup Card */}
@@ -92,8 +92,8 @@ export default function Home() {
                   <CardContent className="p-0 space-y-8">
                      <div className="flex justify-between items-center">
                         <div>
-                          <p className="text-sm text-muted-foreground font-semibold uppercase tracking-wider">Current Tier</p>
-                          <h3 className="text-3xl font-black bg-gradient-to-r from-yellow-500 to-amber-600 text-transparent bg-clip-text">Gold Member</h3>
+                          <p className="text-sm text-muted-foreground font-semibold uppercase tracking-wider">Nível Atual</p>
+                          <h3 className="text-3xl font-black bg-gradient-to-r from-yellow-500 to-amber-600 text-transparent bg-clip-text">Membro Ouro</h3>
                         </div>
                         <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center border-4 border-yellow-500">
                            <div className="font-bold text-xl uppercase">U</div>
@@ -103,7 +103,7 @@ export default function Home() {
                      <div className="space-y-2">
                         <div className="flex justify-between text-sm font-semibold">
                            <span>3,450 XP</span>
-                           <span className="text-muted-foreground">5,000 XP to Platinum</span>
+                           <span className="text-muted-foreground">Faltam 1,550 XP para Platina</span>
                         </div>
                         <div className="w-full bg-secondary h-3 rounded-full overflow-hidden">
                            <div className="bg-primary h-full w-[69%] rounded-full shadow-[0_0_10px_rgba(var(--primary),0.8)]"></div>
@@ -111,11 +111,11 @@ export default function Home() {
                      </div>
 
                      <div className="pt-4 border-t border-border">
-                        <p className="text-sm font-bold mb-3 uppercase tracking-wider text-muted-foreground">Active Perks</p>
+                        <p className="text-sm font-bold mb-3 uppercase tracking-wider text-muted-foreground">Benefícios Ativos</p>
                         <div className="flex gap-2 flex-wrap">
-                           <Badge variant="secondary">15% Parts Discount</Badge>
-                           <Badge variant="secondary">Priority Booking</Badge>
-                           <Badge variant="secondary">Free Coffee</Badge>
+                           <Badge variant="secondary">15% Off Peças</Badge>
+                           <Badge variant="secondary">Oficina Expressa</Badge>
+                           <Badge variant="secondary">Café Cortesia</Badge>
                         </div>
                      </div>
                   </CardContent>

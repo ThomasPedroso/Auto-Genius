@@ -15,7 +15,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-muted-foreground text-sm">
-              Your premium automotive marketplace. Experience the future of car buying, parts shopping, and maintenance scheduling.
+              Seu marketplace automotivo premium. Experimente o futuro de comprar carros, peças e agendar serviços de manutenção.
             </p>
             <div className="flex gap-4">
               <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
@@ -37,43 +37,43 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4 text-lg">Marketplace</h3>
             <ul className="space-y-3">
-              <li><Link href="/marketplace" className="text-muted-foreground hover:text-primary text-sm transition-colors">Browse Cars</Link></li>
-              <li><Link href="/marketplace?condition=new" className="text-muted-foreground hover:text-primary text-sm transition-colors">New Vehicles</Link></li>
-              <li><Link href="/marketplace?condition=used" className="text-muted-foreground hover:text-primary text-sm transition-colors">Used Vehicles</Link></li>
-              <li><Link href="/sell" className="text-muted-foreground hover:text-primary text-sm transition-colors">Sell Your Car</Link></li>
+              <li><Link href="/marketplace" className="text-muted-foreground hover:text-primary text-sm transition-colors">Ver Carros</Link></li>
+              <li><Link href="/marketplace?condition=new" className="text-muted-foreground hover:text-primary text-sm transition-colors">Veículos Novos</Link></li>
+              <li><Link href="/marketplace?condition=used" className="text-muted-foreground hover:text-primary text-sm transition-colors">Veículos Seminovos</Link></li>
+              <li><Link href="/sell" className="text-muted-foreground hover:text-primary text-sm transition-colors">Venda seu Carro</Link></li>
             </ul>
           </div>
 
           {/* Store */}
           <div>
-            <h3 className="font-semibold mb-4 text-lg">Store & Services</h3>
+            <h3 className="font-semibold mb-4 text-lg">Loja & Serviços</h3>
             <ul className="space-y-3">
-              <li><Link href="/parts" className="text-muted-foreground hover:text-primary text-sm transition-colors">Parts Catalog</Link></li>
-              <li><Link href="/accessories" className="text-muted-foreground hover:text-primary text-sm transition-colors">Accessories</Link></li>
-              <li><Link href="/services" className="text-muted-foreground hover:text-primary text-sm transition-colors">Schedule Service</Link></li>
-              <li><Link href="/offers" className="text-muted-foreground hover:text-primary text-sm transition-colors">Special Offers</Link></li>
+              <li><Link href="/parts" className="text-muted-foreground hover:text-primary text-sm transition-colors">Catálogo de Peças</Link></li>
+              <li><Link href="/accessories" className="text-muted-foreground hover:text-primary text-sm transition-colors">Acessórios</Link></li>
+              <li><Link href="/services" className="text-muted-foreground hover:text-primary text-sm transition-colors">Agendar Serviço</Link></li>
+              <li><Link href="/offers" className="text-muted-foreground hover:text-primary text-sm transition-colors">Ofertas Especiais</Link></li>
             </ul>
           </div>
 
           {/* Company */}
           <div>
-            <h3 className="font-semibold mb-4 text-lg">Company</h3>
+            <h3 className="font-semibold mb-4 text-lg">Institucional</h3>
             <ul className="space-y-3">
-              <li><Link href="/about" className="text-muted-foreground hover:text-primary text-sm transition-colors">About Us</Link></li>
-              <li><Link href="/contact" className="text-muted-foreground hover:text-primary text-sm transition-colors">Contact</Link></li>
-              <li><Link href="/careers" className="text-muted-foreground hover:text-primary text-sm transition-colors">Careers</Link></li>
-              <li><Link href="/faq" className="text-muted-foreground hover:text-primary text-sm transition-colors">FAQ</Link></li>
+              <li><Link href="/about" className="text-muted-foreground hover:text-primary text-sm transition-colors">Sobre Nós</Link></li>
+              <li><Link href="/contact" className="text-muted-foreground hover:text-primary text-sm transition-colors">Contato</Link></li>
+              <li><Link href="/careers" className="text-muted-foreground hover:text-primary text-sm transition-colors">Carreiras</Link></li>
+              <li><Link href="/faq" className="text-muted-foreground hover:text-primary text-sm transition-colors">Dúvidas Frequentes</Link></li>
             </ul>
           </div>
         </div>
 
         <div className="border-t pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} Auto-Genius Marketplace. All rights reserved.
+            &copy; {new Date().getFullYear()} Auto-Genius. Todos os direitos reservados.
           </p>
           <div className="flex gap-6">
-            <Link href="/privacy" className="text-sm text-muted-foreground hover:text-primary transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="text-sm text-muted-foreground hover:text-primary transition-colors">Terms of Service</Link>
+            <Link href="/privacy" className="text-sm text-muted-foreground hover:text-primary transition-colors">Política de Privacidade</Link>
+            <Link href="/terms" className="text-sm text-muted-foreground hover:text-primary transition-colors">Termos de Uso</Link>
           </div>
         </div>
       </div>

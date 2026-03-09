@@ -25,8 +25,8 @@ export function Navbar() {
 
   const navigations = [
     { name: "Marketplace", href: "/marketplace" },
-    { name: "Parts Store", href: "/parts" },
-    { name: "Services", href: "/services" },
+    { name: "Peças", href: "/parts" },
+    { name: "Serviços", href: "/services" },
   ];
 
   const handleLogout = () => {
@@ -128,23 +128,23 @@ export function Navbar() {
                 <DropdownMenuItem asChild>
                   <Link href="/profile" className="cursor-pointer">
                     <User className="mr-2 h-4 w-4" />
-                    <span>Profile & Rewards</span>
+                    <span>Perfil & Recompensas</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
+                  <span>Sair</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <div className="flex items-center gap-2">
               <Link href="/login">
-                <Button variant="ghost" className="hidden sm:inline-flex">Sign In</Button>
+                <Button variant="ghost" className="hidden sm:inline-flex">Entrar</Button>
               </Link>
               <Link href="/register">
-                <Button>Sign Up</Button>
+                <Button>Criar Conta</Button>
               </Link>
             </div>
           )}

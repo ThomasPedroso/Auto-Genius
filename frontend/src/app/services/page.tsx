@@ -10,10 +10,10 @@ import { toast } from "sonner";
 import { useUserStore } from "@/store/useUserStore";
 
 const SERVICES = [
-  { id: "s1", name: "Premium Detailing & Wash", icon: <Droplet className="w-8 h-8" />, price: 149, xp: 50 },
-  { id: "s2", name: "Scheduled Maintenance 10k", icon: <Settings className="w-8 h-8" />, price: 299, xp: 150 },
-  { id: "s3", name: "Comprehensive Diagnostics", icon: <ShieldCheck className="w-8 h-8" />, price: 199, xp: 100 },
-  { id: "s4", name: "Performance Tuning", icon: <Wrench className="w-8 h-8" />, price: 599, xp: 300 }
+  { id: "s1", name: "Lavagem Detalhada Premium", icon: <Droplet className="w-8 h-8" />, price: 149, xp: 50 },
+  { id: "s2", name: "Revisão Programada 10k", icon: <Settings className="w-8 h-8" />, price: 299, xp: 150 },
+  { id: "s3", name: "Diagnóstico Completo", icon: <ShieldCheck className="w-8 h-8" />, price: 199, xp: 100 },
+  { id: "s4", name: "Ajuste de Performance", icon: <Wrench className="w-8 h-8" />, price: 599, xp: 300 }
 ];
 
 export default function ServicesPage() {
@@ -24,14 +24,14 @@ export default function ServicesPage() {
   const handleBookService = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedService || !date) {
-      toast.error("Please select a service and date.");
+      toast.error("Por favor, selecione um serviço e uma data.");
       return;
     }
     
     // Find the service xp
     const service = SERVICES.find(s => s.id === selectedService);
     
-    toast.success(`Service booked successfully for ${date}! Earned ${service?.xp} XP.`);
+    toast.success(`Serviço agendado com sucesso para ${date}! Ganhou ${service?.xp} XP.`);
     if (service?.xp) {
       addXP(service.xp);
     }
@@ -43,15 +43,15 @@ export default function ServicesPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-extrabold tracking-tight mb-4">Book Service</h1>
+        <h1 className="text-4xl font-extrabold tracking-tight mb-4">Agendar Serviço</h1>
         <p className="text-muted-foreground text-lg mb-8">
-          Keep your vehicle running at peak performance. Schedule expert maintenance, diagnostics, and detailing services today.
+          Mantenha o seu veículo no melhor desempenho. Agende manutenções, diagnósticos e detalhamentos profissionais hoje mesmo.
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Service Selection */}
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold tracking-tight">1. Select Service package</h2>
+            <h2 className="text-2xl font-bold tracking-tight">1. Selecione o Pacote de Serviço</h2>
             <div className="space-y-4">
               {SERVICES.map(service => (
                 <Card 
@@ -81,16 +81,16 @@ export default function ServicesPage() {
 
           {/* Appointment Details */}
           <div>
-            <h2 className="text-2xl font-bold tracking-tight mb-6">2. Appointment & Review</h2>
+            <h2 className="text-2xl font-bold tracking-tight mb-6">2. Detalhes do Agendamento</h2>
             <Card className="shadow-xl shadow-primary/5 border-border/50">
               <form onSubmit={handleBookService}>
                 <CardHeader>
-                  <CardTitle>Schedule Appointment</CardTitle>
-                  <CardDescription>We will confirm this time via email shortly.</CardDescription>
+                  <CardTitle>Marcar Data</CardTitle>
+                  <CardDescription>Vamos confirmar este horário por email em breve.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="date">Preferred Date & Time</Label>
+                    <Label htmlFor="date">Data & Hora Preferida</Label>
                     <Input 
                       type="datetime-local" 
                       id="date" 
@@ -101,25 +101,25 @@ export default function ServicesPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="vehicle">Vehicle Information</Label>
-                    <Input type="text" id="vehicle" placeholder="e.g. 2023 Tesla Model S" className="bg-secondary/40 h-12" required />
+                    <Label htmlFor="vehicle">Informações do Veículo</Label>
+                    <Input type="text" id="vehicle" placeholder="ex: VW Polo 2023" className="bg-secondary/40 h-12" required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="notes">Additional Notes</Label>
-                    <Input type="text" id="notes" placeholder="Any specific issues?" className="bg-secondary/40 h-12" />
+                    <Label htmlFor="notes">Anotações Adicionais</Label>
+                    <Input type="text" id="notes" placeholder="Algum problema específico?" className="bg-secondary/40 h-12" />
                   </div>
                 </CardContent>
                 <CardFooter className="flex-col gap-4">
                   <div className="w-full bg-secondary p-4 rounded-lg flex items-center justify-between border border-border">
-                    <span className="font-medium">Total Price:</span>
+                    <span className="font-medium">Preço Total:</span>
                     <span className="text-2xl font-black text-primary">
                       ${selectedService ? SERVICES.find(s => s.id === selectedService)?.price : "0"}
                     </span>
                   </div>
                   <Button type="submit" size="lg" className="w-full h-14 text-lg font-bold group" disabled={!selectedService}>
                     {selectedService ? (
-                      <span className="flex items-center gap-2 text-primary-foreground group-hover:scale-105 transition-transform"><CheckCircle2 className="w-5 h-5"/> Confirm Booking</span>
-                    ) : "Select a Service First"}
+                      <span className="flex items-center gap-2 text-primary-foreground group-hover:scale-105 transition-transform"><CheckCircle2 className="w-5 h-5"/> Confirmar Agendamento</span>
+                    ) : "Selecione um Serviço Primeiro"}
                   </Button>
                 </CardFooter>
               </form>
