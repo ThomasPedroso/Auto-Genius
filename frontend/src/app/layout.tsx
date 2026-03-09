@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   description: "Seu destino premium para comprar veículos, peças automobilísticas e agendar serviços automotivos de alta qualidade.",
 };
 
+import { AuthProvider } from "@/components/providers/AuthProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,12 +33,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <Navbar />
-        <main className="flex-grow">
-          {children}
-        </main>
-        <Footer />
-        <Toaster position="top-center" />
+        <AuthProvider>
+          <Navbar />
+          <main className="flex-grow">
+            {children}
+          </main>
+          <Footer />
+          <Toaster position="top-center" />
+        </AuthProvider>
       </body>
     </html>
   );

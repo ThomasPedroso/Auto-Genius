@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { User, ShoppingCart, LogOut, Menu, CarFront } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUserStore } from "@/store/useUserStore";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { useCartStore } from "@/store/useCartStore";
 import {
   DropdownMenu,
@@ -29,9 +31,13 @@ export function Navbar() {
     { name: "Serviços", href: "/services" },
   ];
 
-  const handleLogout = () => {
-    // In a real app with Firebase auth: signOut(auth).then(() => setUser(null));
-    setUser(null);
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
