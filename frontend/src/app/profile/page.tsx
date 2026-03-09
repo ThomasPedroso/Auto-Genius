@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Trophy, Gift, Calendar, History, Shield, Car, Star } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,33 +9,20 @@ import { Button } from "@/components/ui/button";
 import { useUserStore } from "@/store/useUserStore";
 
 export default function ProfilePage() {
-  const { user, setUser } = useUserStore();
-  const [loading, setLoading] = useState(true);
+  const { user, isLoading } = useUserStore();
+  const router = useRouter();
 
   useEffect(() => {
-    // Simulate loading user from Firebase / Zustand initialization
-    setTimeout(() => {
-      if (!user) {
-        // Mock user if not logged in for demo purposes
-        setUser({
-          uid: "demo-user",
-          email: "demo@autogenius.com",
-          displayName: "Alex Johnson",
-          photoURL: null,
-          xp: 850,
-          level: "Gold",
-          savedCars: ["1", "3"]
-        });
-      }
-      setLoading(false);
-    }, 500);
-  }, []);
+    if (!isLoading && !user) {
+      router.push("/login");
+    }
+  }, [user, isLoading, router]);
 
-  if (loading) {
+  if (isLoading || !user) {
     return <div className="min-h-[60vh] flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
   }
 
-  const xpProgress = Math.min((user!.xp / 1000) * 100, 100);
+  const xpProgress = Math.min((user.xp / 1000) * 100, 100);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -56,12 +44,12 @@ export default function ProfilePage() {
                <div className="flex justify-between items-end mb-3">
                  <div>
                     <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider mb-1 block">Nível Atual</span>
-                    <Badge variant="default" className="text-lg py-1 px-4 shadow-md bg-gradient-to-r from-yellow-500 to-amber-600 border-none">
-                       <Trophy className="w-4 h-4 mr-2" /> Ouro
+                    <Badge variant="default" className="text-lg py-1 px-4 shadow-md bg-primary border-none text-primary-foreground">
+                       <Trophy className="w-4 h-4 mr-2" /> {user.level === 'Bronze' ? 'Bronze' : user.level === 'Silver' ? 'Prata' : user.level === 'Gold' ? 'Ouro' : 'Platina'}
                     </Badge>
                  </div>
                  <div className="text-right">
-                    <span className="text-2xl font-black text-primary">{user!.xp}</span>
+                    <span className="text-2xl font-black text-primary">{user.xp}</span>
                     <span className="text-sm font-bold text-muted-foreground ml-1">XP</span>
                  </div>
                </div>
@@ -73,7 +61,7 @@ export default function ProfilePage() {
                  />
                </div>
                <p className="text-xs text-right text-muted-foreground font-medium">
-                 {1000 - user!.xp > 0 ? `Faltam ${1000 - user!.xp} XP para Próximo Nível` : 'Nível Máximo Atingido!'}
+                 {1000 - user.xp > 0 ? `Faltam ${1000 - user.xp} XP para Próximo Nível` : 'Nível Máximo Atingido!'}
                </p>
              </div>
           </CardContent>
