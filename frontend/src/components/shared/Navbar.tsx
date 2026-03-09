@@ -46,11 +46,8 @@ export function Navbar() {
         {/* Mobile menu */}
         <div className="md:hidden flex items-center">
           <Sheet>
-            {/* @ts-ignore: Radix UI asChild type alignment issue with React 19 */}
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
-              </Button>
+            <SheetTrigger render={<Button variant="ghost" size="icon" />}>
+              <Menu className="h-6 w-6" />
             </SheetTrigger>
             <SheetContent side="left">
               <Link href="/" className="flex items-center gap-2 mb-8">
@@ -114,12 +111,8 @@ export function Navbar() {
           
           {user ? (
             <DropdownMenu>
-              {/* @ts-ignore: Radix UI asChild type alignment issue with React 19 */}
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full bg-muted overflow-hidden border">
-                   {/* Simplified avatar for now, can be an image later */}
-                  <span className="font-bold text-xs uppercase">{user.displayName?.charAt(0) || user.email?.charAt(0) || "U"}</span>
-                </Button>
+              <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="rounded-full bg-muted overflow-hidden border" />}>
+                <span className="font-bold text-xs uppercase">{user.displayName?.charAt(0) || user.email?.charAt(0) || "U"}</span>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>
@@ -130,12 +123,9 @@ export function Navbar() {
                   <Badge variant="outline" className="mt-2 w-fit">{user.level}</Badge>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {/* @ts-ignore: Radix UI asChild type alignment issue with React 19 */}
-                <DropdownMenuItem asChild>
-                  <Link href="/profile" className="cursor-pointer">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Perfil & Recompensas</span>
-                  </Link>
+                <DropdownMenuItem render={<Link href="/profile" className="cursor-pointer" />}>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Perfil & Recompensas</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive cursor-pointer">
