@@ -69,7 +69,7 @@ export function Footer() {
 
         <div className="border-t pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} Auto-Genius. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} Grupo Servopa Marketplace. Todos os direitos reservados.
           </p>
           <div className="flex gap-6">
             <Link href="/privacy" className="text-sm text-muted-foreground hover:text-primary transition-colors">Política de Privacidade</Link>

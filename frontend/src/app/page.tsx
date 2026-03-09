@@ -45,7 +45,7 @@ export default function Home() {
       <section className="py-24 bg-secondary">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">Por que escolher a Auto-Genius?</h2>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">Por que escolher o Grupo Servopa?</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Nós simplificamos tudo relacionado ao seu carro, combinando mercado de veículos, peças e oficina em uma plataforma unificada.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

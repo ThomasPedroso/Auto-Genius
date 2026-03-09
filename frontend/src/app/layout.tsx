@@ -17,7 +17,7 @@ import { Footer } from "@/components/shared/Footer";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "Auto-Genius | Premium Automotive Marketplace",
+  title: "Grupo Servopa Marketplace | Seu Portal Automotivo",
   description: "Seu destino premium para comprar veículos, peças automobilísticas e agendar serviços automotivos de alta qualidade.",
 };
 
